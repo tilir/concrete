@@ -9,8 +9,10 @@
 //
 //------------------------------------------------------------------------------
 
+#include <iostream>
 #include <memory>
 
+#include "dice.hpp"
 #include "drawutil.hpp"
 #include "opts.hpp"
 
@@ -22,14 +24,22 @@ constexpr int DEF_CODE = 110;
 constexpr int DEF_XSZ = 1024;
 constexpr int DEF_YSZ = 768;
 
+enum class Init {
+  SINGLE, // single central dot on white
+  RANDOM  // random initial color
+};
+
 struct Config {
   int Code, XSz, YSz;
   bool Quiet = DEF_QUIET;
+  Init InitType;
 };
 
 static Config parse_cfg(int argc, char **argv) {
   Config Cfg;
   options::Parser OptParser;
+  OptParser.template add<std::string>("init", "single",
+                                      "initial sequence (single | random)");
   OptParser.template add<int>("code", DEF_CODE, "code of automata");
   OptParser.template add<int>("xsize", DEF_XSZ, "X size");
   OptParser.template add<int>("ysize", DEF_YSZ, "Y size");
@@ -40,6 +50,17 @@ static Config parse_cfg(int argc, char **argv) {
   Cfg.XSz = OptParser.template get<int>("xsize");
   Cfg.YSz = OptParser.template get<int>("ysize");
   Cfg.Quiet = OptParser.exists("quiet");
+
+  std::string S = OptParser.template get<std::string>("init");
+  if (S == "single")
+    Cfg.InitType = Init::SINGLE;
+  else if (S == "random")
+    Cfg.InitType = Init::RANDOM;
+  else {
+    std::cout << "Wrong -init option provided\n";
+    std::terminate();
+  }
+
   return Cfg;
 }
 
@@ -56,14 +77,14 @@ static char calc_cell(char Left, char Center, char Right, int Code) {
   return ((Code & (1 << CIdx)) == 0) ? 0 : 1;
 }
 
-static void draw_cellular(DrawUtil::ISurface *S, Config Cfg) {
-  int XSize = S->w();
-  int YSize = S->h();
-  std::vector<char> Row(XSize, 0);
+template <typename It>
+static void draw_cellular(DrawUtil::ISurface *S, Config Cfg, It InitBegin,
+                          It InitEnd) {
+  int XSize = S->w(), YSize = S->h();
+  assert(XSize == Cfg.XSz && YSize == Cfg.YSz);
 
+  std::vector<char> Row(InitBegin, InitEnd);
   S->fillwith(White);
-
-  Row[XSize / 2] = 1;
 
   for (int Step = 0; Step < YSize; ++Step) {
     // draw the row
@@ -86,10 +107,20 @@ static void draw_cellular(DrawUtil::ISurface *S, Config Cfg) {
 int main(int argc, char **argv) {
   auto Cfg = parse_cfg(argc, argv);
 
-  auto draw_external = [&Cfg](DrawUtil::ISurface *S) { draw_cellular(S, Cfg); };
+  std::vector<char> InitRow(Cfg.XSz, 0);
+
+  if (Cfg.InitType == Init::SINGLE)
+    InitRow[Cfg.XSz / 2] = 1;
+  else if (Cfg.InitType == Init::RANDOM) {
+    rands::rand_initialize(InitRow.begin(), InitRow.end(), 0, 1);
+  }
+
+  auto draw_external = [&Cfg, &InitRow](DrawUtil::ISurface *S) {
+    draw_cellular(S, Cfg, InitRow.begin(), InitRow.end());
+  };
 
   auto *ViewPort = DrawUtil::QueryViewPort("Cellular Automata", Cfg.XSz,
-                                           Cfg.YSz, draw_external, true);
+                                           Cfg.YSz, draw_external, false);
   auto freeViewPort = [](DrawUtil::IViewPort *V) { delete V; };
   using VpTy = std::unique_ptr<DrawUtil::IViewPort, decltype(freeViewPort)>;
 

@@ -2,6 +2,8 @@
 #
 # CMake build system for computability experiments
 #
+# > cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+#
 #------------------------------------------------------------------------------
 #
 # This file is licensed after LGPL v3
