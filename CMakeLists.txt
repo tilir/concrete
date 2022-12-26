@@ -2,7 +2,15 @@
 #
 # CMake build system for computability experiments
 #
-# > cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+# Try:
+# > cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release .
+# > cmake --build build
+#
+#------------------------------------------------------------------------------
+#
+# Macros to control things
+#
+# -DVISUAL=1 -- include apps with SDL2 visualization
 #
 #------------------------------------------------------------------------------
 #
@@ -18,10 +26,14 @@ enable_testing()
 add_library(frame INTERFACE)
 target_include_directories(frame INTERFACE framework)
 
+add_library(treelib INTERFACE)
+target_include_directories(treelib INTERFACE trees)
+
+
+if(VISUAL)
 # library for drawing
 add_subdirectory(drawer)
-
-enable_testing()
+endif()
 
 # applications
 add_subdirectory(apps)

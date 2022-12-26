@@ -10,13 +10,17 @@
 #------------------------------------------------------------------------------
 
 set(APPS
-  cellular-1d
+  # cellular-1d <--- split to visual and normal parts
+  readbst
 )
 
 foreach(APP ${APPS})
   add_executable(${APP} ${APP}.cc)
   target_compile_features(${APP} PRIVATE cxx_std_20)
   target_link_libraries(${APP} frame)
+  target_link_libraries(${APP} treelib)
+if(VISUAL)
   target_link_libraries(${APP} drawer)
   target_link_libraries(${APP} SDL2)
+endif()
 endforeach()
