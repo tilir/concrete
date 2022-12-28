@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for different applications and tests
+# CMake build system for different applications
 #
 #------------------------------------------------------------------------------
 #

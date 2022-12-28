@@ -29,7 +29,6 @@ target_include_directories(frame INTERFACE framework)
 add_library(treelib INTERFACE)
 target_include_directories(treelib INTERFACE trees)
 
-
 if(VISUAL)
 # library for drawing
 add_subdirectory(drawer)
@@ -37,5 +36,7 @@ endif()
 
 # applications
 add_subdirectory(apps)
+
+add_subdirectory(tests)
 
 install()
