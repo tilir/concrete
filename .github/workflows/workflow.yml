@@ -20,4 +20,4 @@ jobs:
     - name: CMake build
       run: cmake --build build
     - name: CMake test
-      run: cmake --build build --target test
+      run: env CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test
