@@ -23,11 +23,12 @@ class TestRunner
       puts "Cannot find program under test: #{testf}"
       exit 1
     end
+
     if not File.file?(inf)
       puts "Cannot find input file: #{inf}"
       exit 1
     end
-    if not File.file?(inf)
+    if not File.file?(etaf)
       puts "Cannot find etalon file: #{etaf}"
       exit 1
     end
@@ -64,7 +65,7 @@ def parse_options
   OptionParser.new do |opts|
     opts.banner = "Usage: test-run.rb [options]"
 
-    opts.on("-i", "--infile PATH", "Full path to input file. Mandatory argument. No default value.") do |v|
+    opts.on("-i", "--infile PATH", "Full path to single test input file.") do |v|
       options[:infile] = v
     end
 
@@ -74,6 +75,10 @@ def parse_options
 
     opts.on("-e", "--etafile PATH", "Full path to etalon result.") do |v|
       options[:etafile] = v
+    end
+
+    opts.on("-f", "--folder PATH", "Full path to folder with tests.") do |v|
+      options[:folder] = v
     end
 
     opts.on("-v", "--[no-]verbose", "Run verbosely. No default value.") do |v|
@@ -86,8 +91,12 @@ def parse_options
     end
   end.parse!
 
-  if options[:infile] == nil or options[:testfile] == nil or options[:etafile] == nil
-    puts "You need to specify --infile, --etafile and --testfile to run test"
+  bothfiles = !(options[:infile].nil? or options[:etafile].nil?)
+  folder = !options[:folder].nil?
+
+  if options[:testfile] == nil or !(bothfiles or folder)
+    puts "You need to specify --testfile to run test"
+    puts "You also need either --folder or both --infile and --testfile"
     exit 1
   end
 
@@ -99,8 +108,32 @@ end
 
 def main
   options = parse_options
-  testrun = TestRunner.new(options[:testfile], options[:infile], options[:etafile])
-  testrun.run  
+  if (options[:folder].nil?)
+    testrun = TestRunner.new(options[:testfile], options[:infile], options[:etafile])
+    testrun.run
+    exit 0
+  end
+
+  # folder mode
+  if not File.directory?(options[:folder])
+    puts "Cannot find test folder: #{inf}"
+    exit 1
+  end
+
+  Dir.foreach(options[:folder]) do |filename|
+    next if filename == '.' or filename == '..'
+    re = '(\w+).dat'
+    matches = filename.match(re).to_a
+    next if matches.empty?
+    basename = "#{options[:folder]}/#{matches[1]}"
+    if not File.file?("#{basename}.ans")
+      puts "Cannot find answer file for: #{basename}"
+      exit 1
+    end
+    puts "Running for #{basename}"
+    testrun = TestRunner.new(options[:testfile], "#{basename}.dat", "#{basename}.ans")
+    testrun.run
+  end
 end
 
 main
