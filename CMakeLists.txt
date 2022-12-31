@@ -2,16 +2,6 @@
 #
 # CMake build system for computability experiments
 #
-# Try:
-# > cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release .
-# > cmake --build build
-#
-#------------------------------------------------------------------------------
-#
-# Macros to control things
-#
-# -DVISUAL=1 -- include apps with SDL2 visualization
-#
 #------------------------------------------------------------------------------
 #
 # This file is licensed after LGPL v3

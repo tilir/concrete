@@ -14,10 +14,11 @@ require 'optparse'
 require 'tempfile'
 
 class TestRunner 
-  def initialize(testf, inf, etaf)
+  def initialize(testf, inf, etaf, addargs)
     @testfile = testf
     @infile = inf
     @etafile = etaf
+    @addargs = addargs
 
     if not File.file?(testf)
       puts "Cannot find program under test: #{testf}"
@@ -37,7 +38,7 @@ class TestRunner
   def run
     tfile = Tempfile.new
     tfile.close
-    result = system(%("#{@testfile}" < "#{@infile}" > "#{tfile.path}"))
+    result = system(%("#{@testfile}" #{@addargs} < "#{@infile}" > "#{tfile.path}"))
     if result != true
       p "command <#{@testfile} < #{@infile} > #{tfile.path}> failed"
       exit 1
@@ -61,16 +62,13 @@ end
 
 def parse_options
   options = {}
+  options[:addargs] = ""
 
   OptionParser.new do |opts|
     opts.banner = "Usage: test-run.rb [options]"
 
-    opts.on("-i", "--infile PATH", "Full path to single test input file.") do |v|
-      options[:infile] = v
-    end
-
-    opts.on("-t", "--testfile PATH", "Full path to program under test.") do |v|
-      options[:testfile] = v
+    opts.on("-a", "--addargs ARGS", "Additional arguments to pass to testing program.") do |v|
+      options[:addargs] = v
     end
 
     opts.on("-e", "--etafile PATH", "Full path to etalon result.") do |v|
@@ -79,6 +77,14 @@ def parse_options
 
     opts.on("-f", "--folder PATH", "Full path to folder with tests.") do |v|
       options[:folder] = v
+    end
+
+    opts.on("-i", "--infile PATH", "Full path to single test input file.") do |v|
+      options[:infile] = v
+    end
+
+    opts.on("-t", "--testfile PATH", "Full path to program under test.") do |v|
+      options[:testfile] = v
     end
 
     opts.on("-v", "--[no-]verbose", "Run verbosely. No default value.") do |v|
@@ -109,7 +115,7 @@ end
 def main
   options = parse_options
   if (options[:folder].nil?)
-    testrun = TestRunner.new(options[:testfile], options[:infile], options[:etafile])
+    testrun = TestRunner.new(options[:testfile], options[:infile], options[:etafile], options[:addargs])
     testrun.run
     exit 0
   end
@@ -131,7 +137,7 @@ def main
       exit 1
     end
     puts "Running for #{basename}"
-    testrun = TestRunner.new(options[:testfile], "#{basename}.dat", "#{basename}.ans")
+    testrun = TestRunner.new(options[:testfile], "#{basename}.dat", "#{basename}.ans", options[:addargs])
     testrun.run
   end
 end

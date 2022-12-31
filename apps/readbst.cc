@@ -61,7 +61,7 @@ trees::TabTree<T> read_bst_ordered(std::istream &Is, const Config &Cfg) {
 
 } // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) try {
   auto Cfg = parse_cfg(argc, argv);
   std::cin.exceptions(std::ios_base::failbit);
   auto Tree = read_bst_ordered<int>(std::cin, Cfg);
@@ -69,4 +69,15 @@ int main(int argc, char **argv) {
     Tree.dumpDot(std::cout);
   else
     Tree.dumpEL(std::cout);
+} catch (const trees::tree_error_base &T) {
+  std::cout << "Tree error: " << T.what() << " at key: ";
+  T.dump_key(std::cout);
+  std::cout << "\n";
+  return -1;
+} catch (const std::runtime_error &E) {
+  std::cout << "Runtime error: " << E.what() << "\n";
+  return -1;
+} catch (...) {
+  std::cout << "Unknown error\n";
+  return -1;
 }

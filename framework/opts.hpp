@@ -48,7 +48,7 @@ class Parser final {
                   << ") : " << Desc.description << std::endl;
       }
       if (!IsHelp)
-        std::terminate();
+        throw std::runtime_error("Wrong options");
       exit(0);
     }
     Values_[Opt].exists = true;
