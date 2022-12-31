@@ -4,6 +4,10 @@
 // Permutation format: N a1 .. aN
 // Dump resulting bst to stdout (plenty of options)
 //
+// try:
+// > ./randperm --first=1 --last=10 >& perm
+// > ./readbst < perm
+//
 //------------------------------------------------------------------------------
 //
 // This file is licensed after LGPL v3
@@ -13,7 +17,6 @@
 
 #include "opts.hpp"
 #include "tabtree.hpp"
-#include <fstream>
 #include <iostream>
 
 namespace {
