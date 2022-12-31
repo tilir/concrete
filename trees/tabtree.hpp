@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 //
-// Tabulated tree: binary tree with left and rights vectors
+// Tabulated tree: binary tree with left and right vectors
 // optimized for almost immutable trees
 //
 //------------------------------------------------------------------------------
@@ -57,6 +57,24 @@ template <typename T> class TabTree {
     }
   }
 
+  // like dumpEL but with nil node and dot specifics
+  // mark left links red, right links blue
+  void dumpELDot(std::ostream &os) const {
+    for (int I = 0; I < Data.size(); ++I) {
+      os << Data[I] << " -- ";
+      if (Left[I] != -1)
+        os << Data[Left[I]] << " [color = red]\n";
+      else
+        os << "nil [style=dotted]\n";
+
+      os << Data[I] << " -- ";
+      if (Right[I] != -1)
+        os << Data[Right[I]] << " [color = blue]\n";
+      else
+        os << "nil [style=dotted]\n";
+    }
+  }
+
 public:
   explicit TabTree(int Sz, int Rt = -1)
       : Left(Sz, -1), Right(Sz, -1), Data(Sz), Root(Rt) {}
@@ -78,14 +96,14 @@ public:
   void dumpEL(std::ostream &os) const {
     for (int I = 0; I < Data.size(); ++I) {
       if (Left[I] != -1)
-        os << "v" << Data[I] << " -- "
-           << "v" << Data[Left[I]] << "\n";
+        os << Data[I] << " -- " << Data[Left[I]] << "\n";
       if (Right[I] != -1)
-        os << "v" << Data[I] << " -- "
-           << "v" << Data[Right[I]] << "\n";
+        os << Data[I] << " -- " << Data[Right[I]] << "\n";
     }
   }
 
+  // dump tree as a dot format to visualize
+  // mark left links red, right links blue
   void dumpDot(std::ostream &os) const {
     os << "graph {\n";
     if (Root == -1) {
@@ -104,7 +122,7 @@ public:
     for (int I = 0; I < Data.size(); ++I)
       MRanks.insert({Ranks[I], I});
     auto MaxRankIt = std::max_element(Ranks.begin(), Ranks.end());
-    if (MaxRankIt != Ranks.end())
+    if (MaxRankIt != Ranks.end()) {
       for (int I = 1; I < *MaxRankIt; ++I) {
         auto [It, Ite] = MRanks.equal_range(I);
         if (It != Ite) {
@@ -114,22 +132,9 @@ public:
           os << " }\n";
         }
       }
-
-    // like dumpEL but with nil
-    for (int I = 0; I < Data.size(); ++I) {
-      os << Data[I] << " -- ";
-      if (Left[I] != -1)
-        os << Data[Left[I]] << " [color = red]\n";
-      else
-        os << "nil [style=dotted]\n";
-
-      os << Data[I] << " -- ";
-      if (Right[I] != -1)
-        os << Data[Right[I]] << " [color = blue]\n";
-      else
-        os << "nil [style=dotted]\n";
     }
 
+    dumpELDot(os);
     os << "}\n";
   }
 };
