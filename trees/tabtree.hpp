@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 //
-// Tabulated tree: binary tree with left and rights vectors
+// Tabulated tree: binary tree with left and right vectors
 // optimized for almost immutable trees
 //
 //------------------------------------------------------------------------------
@@ -10,12 +10,34 @@
 //
 //------------------------------------------------------------------------------
 
+#pragma once
+
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <optional>
+#include <ranges>
+#include <stdexcept>
+#include <tuple>
 #include <vector>
 
 namespace trees {
+
+namespace ranges = std::ranges;
+
+struct tree_error_base : public std::runtime_error {
+  virtual void dump_key(std::ostream &) const = 0;
+  tree_error_base(const char *Msg) : std::runtime_error(Msg) {}
+  const char *what() const noexcept override {
+    return std::runtime_error::what();
+  }
+};
+
+template <typename T> struct tree_error : public tree_error_base {
+  T Key;
+  tree_error(const char *Msg, T K) : tree_error_base(Msg), Key(K) {}
+  void dump_key(std::ostream &Os) const override { Os << Key; }
+};
 
 template <typename T> class TabTree {
   std::vector<int> Left, Right;
@@ -32,13 +54,14 @@ template <typename T> class TabTree {
   }
 
   void addSearchOrderRec(int N, T Dt) {
+    if (Dt == Data[N])
+      throw tree_error<T>("Error: duplicate key insertion", Dt);
     if (Dt < Data[N]) {
       if (Left[N] != -1)
         addSearchOrderRec(Left[N], std::move(Dt));
       else
         addNode(Left.begin() + N, std::move(Dt));
     } else {
-      assert(Dt != Data[N]);
       if (Right[N] != -1)
         addSearchOrderRec(Right[N], std::move(Dt));
       else
@@ -54,6 +77,24 @@ template <typename T> class TabTree {
     if (Right[N] != -1) {
       Ranks[Right[N]] = Ranks[N] + 1;
       setRanks(Ranks, Right[N]);
+    }
+  }
+
+  // like dumpEL but unordered, with nil node and dot specifics
+  // mark left links red, right links blue
+  void dumpELDot(std::ostream &os) const {
+    for (int I = 0; I < Data.size(); ++I) {
+      os << Data[I] << " -- ";
+      if (Left[I] != -1)
+        os << Data[Left[I]] << " [color = red]\n";
+      else
+        os << "nil [style=dotted]\n";
+
+      os << Data[I] << " -- ";
+      if (Right[I] != -1)
+        os << Data[Right[I]] << " [color = blue]\n";
+      else
+        os << "nil [style=dotted]\n";
     }
   }
 
@@ -75,17 +116,34 @@ public:
   }
 
   // dump tree as edge list
-  void dumpEL(std::ostream &os) const {
+  // edges are ordered by first and then by second vertex data
+  // prepend with nedges and root vertex data
+  void dumpEL(std::ostream &Os) const {
+    std::vector<std::pair<T, T>> Els;
+    Els.reserve(Data.size() * 2);
     for (int I = 0; I < Data.size(); ++I) {
       if (Left[I] != -1)
-        os << "v" << Data[I] << " -- "
-           << "v" << Data[Left[I]] << "\n";
+        Els.emplace_back(Data[I], Data[Left[I]]);
       if (Right[I] != -1)
-        os << "v" << Data[I] << " -- "
-           << "v" << Data[Right[I]] << "\n";
+        Els.emplace_back(Data[I], Data[Right[I]]);
     }
+
+    if (Els.empty()) {
+      Os << "[niltree]\n";
+      return;
+    }
+
+    ranges::sort(Els, {}, [](auto P) { return P.second; });
+    ranges::stable_sort(Els, {}, [](auto P) { return P.first; });
+
+    Os << Els.size() << "\n";
+    Os << Data[Root] << "\n";
+    for (const auto &El : Els)
+      Os << El.first << " -- " << El.second << "\n";
   }
 
+  // dump tree as a dot format to visualize
+  // mark left links red, right links blue
   void dumpDot(std::ostream &os) const {
     os << "graph {\n";
     if (Root == -1) {
@@ -104,7 +162,7 @@ public:
     for (int I = 0; I < Data.size(); ++I)
       MRanks.insert({Ranks[I], I});
     auto MaxRankIt = std::max_element(Ranks.begin(), Ranks.end());
-    if (MaxRankIt != Ranks.end())
+    if (MaxRankIt != Ranks.end()) {
       for (int I = 1; I < *MaxRankIt; ++I) {
         auto [It, Ite] = MRanks.equal_range(I);
         if (It != Ite) {
@@ -114,22 +172,9 @@ public:
           os << " }\n";
         }
       }
-
-    // like dumpEL but with nil
-    for (int I = 0; I < Data.size(); ++I) {
-      os << Data[I] << " -- ";
-      if (Left[I] != -1)
-        os << Data[Left[I]] << " [color = red]\n";
-      else
-        os << "nil [style=dotted]\n";
-
-      os << Data[I] << " -- ";
-      if (Right[I] != -1)
-        os << Data[Right[I]] << " [color = blue]\n";
-      else
-        os << "nil [style=dotted]\n";
     }
 
+    dumpELDot(os);
     os << "}\n";
   }
 };
