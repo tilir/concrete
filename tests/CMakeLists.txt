@@ -19,4 +19,10 @@ add_test(
   NAME readbst_back_test
   COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst-back -a -back"
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-set_tests_properties(readbst_test PROPERTIES DEPENDS readbst)
+set_tests_properties(readbst_back_test PROPERTIES DEPENDS readbst)
+
+add_test(
+  NAME readbst_topo_test
+  COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst-topo -a -topo"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(readbst_topo_test PROPERTIES DEPENDS readbst)

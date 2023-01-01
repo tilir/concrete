@@ -13,10 +13,12 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
 #include <iostream>
 #include <map>
 #include <optional>
 #include <ranges>
+#include <stack>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
@@ -39,20 +41,22 @@ template <typename T> struct tree_error : public tree_error_base {
   void dump_key(std::ostream &Os) const override { Os << Key; }
 };
 
+// tabulated tree class
 template <typename T> class TabTree {
   std::vector<int> Left, Right;
   std::vector<T> Data;
-  int Root;
+  int Root = -1;
   int FreePos = 0;
 
   // Pos is right or left link in parent
-  template <typename It> void addNode(It Pos, T Dt) {
+  template <std::random_access_iterator It> void addNode(It Pos, T Dt) {
     assert(FreePos < Data.size());
     *Pos = FreePos;
     Data[FreePos] = std::move(Dt);
     FreePos += 1;
   }
 
+  // ineffective, may be in future I will rewrite better
   void addSearchOrderRec(int N, T Dt) {
     if (Dt == Data[N])
       throw tree_error<T>("Error: duplicate key insertion", Dt);
@@ -69,7 +73,9 @@ template <typename T> class TabTree {
     }
   }
 
-  template <typename It> void setRanks(It Ranks, int N) const {
+  // ineffective, may be in future I will rewrite better
+  template <std::random_access_iterator It>
+  void setRanks(It Ranks, int N) const {
     if (Left[N] != -1) {
       Ranks[Left[N]] = Ranks[N] + 1;
       setRanks(Ranks, Left[N]);
@@ -98,9 +104,65 @@ template <typename T> class TabTree {
     }
   }
 
+  // ineffective, may be in future I will rewrite better
+  template <typename F> void visit_inord_rec(int N, F Visitor) {
+    if (Left[N] != -1)
+      visit_inord_rec(Left[N], Visitor);
+    Visitor(Data[N]);
+    if (Right[N] != -1)
+      visit_inord_rec(Right[N], Visitor);
+  }
+
+  template <typename F> void visit_inord(F Visitor) {
+    if (Root == -1)
+      return;
+    assert(Root == 0);
+    visit_inord_rec(Root, Visitor);
+  }
+
 public:
   explicit TabTree(int Sz, int Rt = -1)
       : Left(Sz, -1), Right(Sz, -1), Data(Sz), Root(Rt) {}
+
+  // construct TabTree from proper braced sequence like (()())()
+  // equivalent permutation will be 1 .. N+1 where N is number of braces
+  template <std::random_access_iterator It>
+  explicit TabTree(It Start, int Sz)
+      : Left(Sz + 1, -1), Right(Sz + 1, -1), Data(Sz + 1) {
+    // idea is: build topology and then traverse inorder and change data
+
+    std::stack<int> S;
+
+    // we have forest on input so basically we need common top)
+    Root = 0;
+    S.push(Root);
+    int Curnode = 1;
+
+    for (int N = 0; N < Sz; ++N) {
+      auto Elt = Start[N];
+      if (Elt) {
+        S.push(Curnode);
+        Curnode += 1;
+      } else {
+        int Child = S.top();
+        S.pop();
+        assert(!S.empty());
+        int Parent = S.top();
+        if (Left[Parent] == -1)
+          Left[Parent] = Child;
+        else {
+          assert(Right[Parent] == -1);
+          Right[Parent] = Child;
+        }
+      }
+    }
+
+    S.pop();
+    assert(S.empty());
+
+    T CurVal = 1;
+    visit_inord([&CurVal](T &Data) { Data = CurVal++; });
+  }
 
   void addSearchOrder(T Dt) {
     // if Root is -1 this is first node, add to 0 and set Root to 0.
@@ -177,6 +239,93 @@ public:
     dumpELDot(os);
     os << "}\n";
   }
+
+  template <std::random_access_iterator It>
+  void readTopologyRec(int N, It Arr, int &Cursor) const {
+    int Cur = Cursor;
+    if (N == -1 && Cur < 2 * Data.size()) {
+      Arr[Cur] = 0;
+      Cursor += 1;
+      return;
+    }
+
+    if (Cur < 2 * Data.size()) {
+      assert(N != -1);
+      Arr[Cur] = 1;
+      Cursor += 1;
+      readTopologyRec(Left[N], Arr, Cursor);
+      readTopologyRec(Right[N], Arr, Cursor);
+    }
+  }
+
+  std::vector<bool> readTopology() const {
+    std::vector<bool> Ret;
+    if (Root == -1)
+      return Ret;
+    assert(Root == 0);
+    Ret.resize(Data.size() * 2);
+    int Cursor = 0;
+    readTopologyRec(Root, Ret.begin(), Cursor);
+    return Ret;
+  }
+
+  void dumpTopo(std::ostream &os) const {
+    std::vector<bool> V = readTopology();
+    assert((V.size() % 2) == 0);
+    std::cout << V.size() / 2 << std::endl;
+    std::ostream_iterator<char> OsIt(std::cout, "");
+    std::transform(V.begin(), V.end(), OsIt,
+                   [](bool S) { return S ? '(' : ')'; });
+    std::cout << std::endl;
+  }
 };
+
+// parse proper braces and read the tree
+template <typename T>
+trees::TabTree<T> read_bst_braced(std::istream &Is, bool Back) {
+  int N, M = 0;
+  Is >> N;
+  N = N * 2;
+  std::vector<bool> Vec(N);
+  while (M < N) {
+    char c;
+    Is >> c;
+    if (std::isspace(c))
+      continue;
+    switch (c) {
+    case '(':
+    case ')':
+      Vec[M] = (c == '(');
+      M += 1;
+      break;
+    default:
+      throw std::runtime_error("Unknown input symbol");
+    }
+  }
+
+  if (Back)
+    std::reverse(Vec.begin(), Vec.end());
+
+  trees::TabTree<T> Ret(Vec.begin(), N);
+  return Ret;
+}
+
+// parse permutation and read the tree
+template <typename T>
+trees::TabTree<T> read_bst_ordered(std::istream &Is, bool Back) {
+  int N;
+  Is >> N;
+  std::vector<T> Vec(N);
+  for (int I = 0; I < N; ++I)
+    Is >> Vec[I];
+
+  if (Back)
+    std::reverse(Vec.begin(), Vec.end());
+
+  trees::TabTree<T> Ret(N);
+  for (int I = 0; I < N; ++I)
+    Ret.addSearchOrder(Vec[I]);
+  return Ret;
+}
 
 } // namespace trees
