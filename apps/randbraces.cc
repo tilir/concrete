@@ -96,7 +96,7 @@ int main(int argc, char **argv) try {
     rands::Dice::init(Cfg.Seed);
 
   std::vector<bool> V = bitstring(Cfg.N);
-  std::cout << V.size() << "\n";
+  std::cout << V.size() / 2 << "\n";
 
   if (Cfg.ZeroOne) {
     std::ostream_iterator<int> OsIt(std::cout, " ");
