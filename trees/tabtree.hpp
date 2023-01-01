@@ -120,45 +120,52 @@ template <typename T> class TabTree {
     visit_inord_rec(Root, Visitor);
   }
 
+  // main idea: putting in stack node for right and left link
+  template <std::random_access_iterator It>
+  void reconstructTopology(It Start, int Sz) {
+    std::stack<int> S;
+    Root = 0;
+    int CurNode = 0;
+    assert(Start[0] == true);
+    S.push(Root);
+    S.push(Root);
+
+    for (int N = 1; N < Sz; ++N) {
+      auto Parent = S.top();
+      S.pop();
+      auto Elt = Start[N];
+      if (Elt) {
+        CurNode += 1;
+        if (Left[Parent] == -1) {
+          Left[Parent] = CurNode;
+        } else {
+          assert(Right[Parent] == -1);
+          Right[Parent] = CurNode;
+        }
+        S.push(CurNode);
+        S.push(CurNode);
+      }
+      assert(!S.empty());
+    }
+
+    S.pop();
+    assert(S.empty());
+  }
+
 public:
   explicit TabTree(int Sz, int Rt = -1)
       : Left(Sz, -1), Right(Sz, -1), Data(Sz), Root(Rt) {}
 
   // construct TabTree from proper braced sequence like (()())()
   // equivalent permutation will be 1 .. N+1 where N is number of braces
-  template <std::random_access_iterator It>
+  template <std::random_access_iterator It> requires requires(It I) {
+    // clang-format off
+    { *I } -> std::convertible_to<bool>;
+    // clang-format on
+  }
   explicit TabTree(It Start, int Sz)
-      : Left(Sz + 1, -1), Right(Sz + 1, -1), Data(Sz + 1) {
-    // idea is: build topology and then traverse inorder and change data
-
-    std::stack<int> S;
-
-    // we have forest on input so basically we need common top)
-    Root = 0;
-    S.push(Root);
-    int Curnode = 1;
-
-    for (int N = 0; N < Sz; ++N) {
-      auto Elt = Start[N];
-      if (Elt) {
-        S.push(Curnode);
-        Curnode += 1;
-      } else {
-        int Child = S.top();
-        S.pop();
-        assert(!S.empty());
-        int Parent = S.top();
-        if (Left[Parent] == -1)
-          Left[Parent] = Child;
-        else {
-          assert(Right[Parent] == -1);
-          Right[Parent] = Child;
-        }
-      }
-    }
-
-    S.pop();
-    assert(S.empty());
+      : Left(Sz / 2, -1), Right(Sz / 2, -1), Data(Sz / 2) {
+    reconstructTopology(Start, Sz);
 
     T CurVal = 1;
     visit_inord([&CurVal](T &Data) { Data = CurVal++; });
@@ -286,7 +293,7 @@ trees::TabTree<T> read_bst_braced(std::istream &Is, bool Back) {
   int N, M = 0;
   Is >> N;
   N = N * 2;
-  std::vector<bool> Vec(N);
+  std::vector<bool> Vec(N + 1); // 2N + 1 to fit mandatory last 0
   while (M < N) {
     char c;
     Is >> c;
