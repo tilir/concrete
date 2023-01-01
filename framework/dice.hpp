@@ -12,25 +12,57 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
 #include <random>
 
 namespace rands {
 
-struct Dice {
-  std::uniform_int_distribution<int> Uid;
+// simple dice to roll
+class Dice {
+  std::mt19937 Engine;
+  static std::unique_ptr<Dice> PImpl;
+  Dice(unsigned Seed) { Engine.seed(Seed); }
 
-  Dice(int Min, int Max) : Uid(Min, Max) {}
-  int operator()() {
+public:
+  // version with no seed: use random device
+  static auto init() {
     static std::random_device Rd;
-    static std::mt19937 Rng{Rd()};
-    return Uid(Rng);
+    auto Seed = Rd();
+    init(Seed);
+    return Seed;
+  }
+
+  // version with user-provided seed
+  static void init(unsigned Seed) {
+    struct MakeUniqueEnabler : public Dice {
+      MakeUniqueEnabler(unsigned Seed) : Dice(Seed) {}
+    };
+    PImpl = std::make_unique<MakeUniqueEnabler>(Seed);
+  }
+
+  template <typename T> static T generate(T Min, T Max) {
+    if (!PImpl)
+      throw std::runtime_error("Please initialize random generator");
+    std::uniform_int_distribution<T> Dist(Min, Max);
+    return Dist(PImpl->Engine);
+  }
+
+  template <typename T> T operator()(T Min, T Max) {
+    return generate(Min, Max);
+  }
+
+  template <typename T, typename It>
+  static void rand_initialize(It Begin, It End, T Min, T Max) {
+    std::generate(Begin, End, [Min, Max] { return generate(Min, Max); });
+  }
+
+  template <typename It> static void rand_shuffle(It Begin, It End) {
+    if (!PImpl)
+      throw std::runtime_error("Please initialize random generator");
+    std::shuffle(Begin, End, PImpl->Engine);
   }
 };
 
-template <typename It>
-void rand_initialize(It Begin, It End, int Min, int Max) {
-  Dice D(Min, Max);
-  std::generate(Begin, End, [&] { return D(); });
-}
+inline std::unique_ptr<Dice> Dice::PImpl;
 
 } // namespace rands

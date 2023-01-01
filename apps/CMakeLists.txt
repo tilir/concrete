@@ -13,6 +13,7 @@ set(APPS
   # cellular-1d <--- split to visual and normal parts
   readbst
   randperm
+  randbraces
 )
 
 foreach(APP ${APPS})

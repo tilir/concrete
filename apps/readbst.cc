@@ -34,14 +34,14 @@ struct Config {
 Config parse_cfg(int argc, char **argv) {
   Config Cfg;
   options::Parser OptParser;
-  OptParser.template add<int>("verbose", DEF_VERBOSE, "a lot of debug output");
   OptParser.template add<int>("dot", DEF_DOT, "output dot file");
   OptParser.template add<int>("back", DEF_BACK, "read input backwards");
+  OptParser.template add<int>("verbose", DEF_VERBOSE, "a lot of debug output");
   OptParser.parse(argc, argv);
 
-  Cfg.Verbose = OptParser.exists("verbose");
   Cfg.DumpDot = OptParser.exists("dot");
   Cfg.Back = OptParser.exists("back");
+  Cfg.Verbose = OptParser.exists("verbose");
   return Cfg;
 }
 
