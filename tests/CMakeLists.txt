@@ -21,8 +21,18 @@ add_test(
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 set_tests_properties(readbst_back_test PROPERTIES DEPENDS readbst)
 
+# test for topology output like
+# 4 3 2 1 --> 4 (()(()))
 add_test(
   NAME readbst_topo_test
   COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst-topo -a -topo"
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 set_tests_properties(readbst_topo_test PROPERTIES DEPENDS readbst)
+
+# tests for braced input, like:
+# 4 (()(())) to { 4 -- 2 [left], 2 -- 3 [right], 3 -- 1 [left] }
+add_test(
+  NAME readbst_brac_test
+  COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst-ibrac -a -ibrac"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(readbst_brac_test PROPERTIES DEPENDS readbst)
