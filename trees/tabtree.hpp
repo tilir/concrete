@@ -123,12 +123,12 @@ template <typename T> class TabTree {
   // main idea: putting in stack node for right and left link
   template <std::random_access_iterator It>
   void reconstructTopology(It Start, int Sz) {
-    std::stack<int> S;
+    std::stack<std::pair<int, bool>> S;
     Root = 0;
     int CurNode = 0;
     assert(Start[0] == true);
-    S.push(Root);
-    S.push(Root);
+    S.push({Root, false});
+    S.push({Root, true});
 
     for (int N = 1; N < Sz; ++N) {
       auto Parent = S.top();
@@ -136,14 +136,15 @@ template <typename T> class TabTree {
       auto Elt = Start[N];
       if (Elt) {
         CurNode += 1;
-        if (Left[Parent] == -1) {
-          Left[Parent] = CurNode;
+        if (Parent.second) {
+          assert(Left[Parent.first] == -1);
+          Left[Parent.first] = CurNode;
         } else {
-          assert(Right[Parent] == -1);
-          Right[Parent] = CurNode;
+          assert(Right[Parent.first] == -1);
+          Right[Parent.first] = CurNode;
         }
-        S.push(CurNode);
-        S.push(CurNode);
+        S.push({CurNode, false});
+        S.push({CurNode, true});
       }
       assert(!S.empty());
     }
@@ -247,32 +248,31 @@ public:
     os << "}\n";
   }
 
-  template <std::random_access_iterator It>
-  void readTopologyRec(int N, It Arr, int &Cursor) const {
-    int Cur = Cursor;
-    if (N == -1 && Cur < 2 * Data.size()) {
-      Arr[Cur] = 0;
-      Cursor += 1;
-      return;
-    }
-
-    if (Cur < 2 * Data.size()) {
-      assert(N != -1);
-      Arr[Cur] = 1;
-      Cursor += 1;
-      readTopologyRec(Left[N], Arr, Cursor);
-      readTopologyRec(Right[N], Arr, Cursor);
-    }
-  }
-
   std::vector<bool> readTopology() const {
     std::vector<bool> Ret;
     if (Root == -1)
       return Ret;
     assert(Root == 0);
-    Ret.resize(Data.size() * 2);
+    Ret.reserve(Data.size() * 2);
     int Cursor = 0;
-    readTopologyRec(Root, Ret.begin(), Cursor);
+
+    std::stack<int> S;
+    Ret.push_back(true);
+    S.push(Right[Root]);
+    S.push(Left[Root]);
+
+    while (!S.empty()) {
+      auto Cur = S.top();
+      S.pop();
+      if (Cur != -1) {
+        Ret.push_back(true);
+        S.push(Right[Cur]);
+        S.push(Left[Cur]);
+      } else {
+        Ret.push_back(false);
+      }
+    }
+    Ret.pop_back();
     return Ret;
   }
 
