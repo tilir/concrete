@@ -289,14 +289,19 @@ public:
 
 // parse proper braces and read the tree
 template <typename T>
-trees::TabTree<T> read_bst_braced(std::istream &Is, bool Back) {
+std::optional<trees::TabTree<T>> read_bst_braced(std::istream &Is, bool Back) {
   int N, M = 0;
   Is >> N;
+  if (!Is)
+    return std::nullopt;
+
   N = N * 2;
   std::vector<bool> Vec(N + 1); // 2N + 1 to fit mandatory last 0
   while (M < N) {
     char c;
     Is >> c;
+    if (!Is)
+      return std::nullopt;
     if (std::isspace(c))
       continue;
     switch (c) {
@@ -319,12 +324,19 @@ trees::TabTree<T> read_bst_braced(std::istream &Is, bool Back) {
 
 // parse permutation and read the tree
 template <typename T>
-trees::TabTree<T> read_bst_ordered(std::istream &Is, bool Back) {
+std::optional<trees::TabTree<T>> read_bst_ordered(std::istream &Is, bool Back) {
   int N;
   Is >> N;
+  if (!Is)
+    return std::nullopt;
+
   std::vector<T> Vec(N);
-  for (int I = 0; I < N; ++I)
+
+  for (int I = 0; I < N; ++I) {
     Is >> Vec[I];
+    if (!Is)
+      return std::nullopt;
+  }
 
   if (Back)
     std::reverse(Vec.begin(), Vec.end());

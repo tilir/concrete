@@ -69,32 +69,46 @@ Config parse_cfg(int argc, char **argv) {
   return Cfg;
 }
 
-} // namespace
-
-int main(int argc, char **argv) try {
-  auto Cfg = parse_cfg(argc, argv);
-  std::cin.exceptions(std::ios_base::failbit);
-  trees::TabTree<int> Tree(1);
+// step of batch execution
+bool BatchStep(std::istream &Is, std::ostream &Os, const Config &Cfg) {
+  std::optional<trees::TabTree<int>> Tree = std::nullopt;
 
   switch (Cfg.InpType) {
   case InpKind::BRACES:
-    Tree = trees::read_bst_braced<int>(std::cin, Cfg.Back);
+    Tree = trees::read_bst_braced<int>(Is, Cfg.Back);
     break;
   default:
-    Tree = trees::read_bst_ordered<int>(std::cin, Cfg.Back);
+    Tree = trees::read_bst_ordered<int>(Is, Cfg.Back);
     break;
+  }
+
+  if (!Tree) {
+    if (Is.bad())
+      std::cerr << "I/O error while reading\n";
+    else if (!Is.eof() && Is.fail())
+      std::cerr << "Bat data encountered\n";
+    return false;
   }
 
   switch (Cfg.DumpType) {
   case DumpKind::DOT:
-    Tree.dumpDot(std::cout);
+    Tree->dumpDot(Os);
     break;
   case DumpKind::TOPO:
-    Tree.dumpTopo(std::cout);
+    Tree->dumpTopo(Os);
     break;
   default:
-    Tree.dumpEL(std::cout);
+    Tree->dumpEL(Os);
     break;
+  }
+  return true;
+}
+
+} // namespace
+
+int main(int argc, char **argv) try {
+  auto Cfg = parse_cfg(argc, argv);
+  while (BatchStep(std::cin, std::cout, Cfg)) {
   }
 } catch (const trees::tree_error_base &T) {
   std::cout << "Tree error: " << T.what() << " at key: ";
