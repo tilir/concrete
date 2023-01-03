@@ -1,6 +1,8 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for test runs
+# CMake build system for readbst app
+# test for topology output like
+# 4 3 2 1 --> 4 (()(()))
 #
 #------------------------------------------------------------------------------
 #
@@ -9,15 +11,8 @@
 #
 #------------------------------------------------------------------------------
 
-set(TEST_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb")
-
-# basic trees
-add_subdirectory(readbst)
-add_subdirectory(readbst-back)
-add_subdirectory(readbst-topo)
-add_subdirectory(readbst-ibrac)
-
-# permutations
-add_subdirectory(permloops)
-add_subdirectory(invperm)
-add_subdirectory(baxters)
+add_test(
+  NAME readbst_topo_test
+  COMMAND bash -c "${TEST_SCRIPT} -t ${readbst_app} -f ${CMAKE_CURRENT_SOURCE_DIR} -a -topo"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(readbst_topo_test PROPERTIES DEPENDS readbst)

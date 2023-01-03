@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for test runs
+# CMake build system for readbst app
+# test for reading permutation backward and output of edge list
 #
 #------------------------------------------------------------------------------
 #
@@ -9,15 +10,8 @@
 #
 #------------------------------------------------------------------------------
 
-set(TEST_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb")
-
-# basic trees
-add_subdirectory(readbst)
-add_subdirectory(readbst-back)
-add_subdirectory(readbst-topo)
-add_subdirectory(readbst-ibrac)
-
-# permutations
-add_subdirectory(permloops)
-add_subdirectory(invperm)
-add_subdirectory(baxters)
+add_test(
+  NAME readbst_back_test
+  COMMAND bash -c "${TEST_SCRIPT} -t ${readbst_app} -f ${CMAKE_CURRENT_SOURCE_DIR} -a -back"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(readbst_back_test PROPERTIES DEPENDS readbst)

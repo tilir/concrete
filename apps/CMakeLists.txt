@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 #
 # CMake build system for different applications
+# set env like readbst_app for parent scopr to use in testing
 #
 #------------------------------------------------------------------------------
 #
@@ -16,9 +17,11 @@ set(APPS
   randbraces
   permloops
   invperm
+  is-baxters
 )
 
 foreach(APP ${APPS})
+  set(${APP}_app ${CMAKE_BINARY_DIR}/apps/${APP} PARENT_SCOPE)
   add_executable(${APP} ${APP}.cc)
   target_compile_features(${APP} PRIVATE cxx_std_20)
   target_link_libraries(${APP} frame)
@@ -28,4 +31,5 @@ if(VISUAL)
   target_link_libraries(${APP} drawer)
   target_link_libraries(${APP} SDL2)
 endif()
+
 endforeach()
