@@ -14,6 +14,8 @@ set(APPS
   readbst
   randperm
   randbraces
+  permloops
+  invperm
 )
 
 foreach(APP ${APPS})
@@ -21,6 +23,7 @@ foreach(APP ${APPS})
   target_compile_features(${APP} PRIVATE cxx_std_20)
   target_link_libraries(${APP} frame)
   target_link_libraries(${APP} treelib)
+  target_link_libraries(${APP} permlib)
 if(VISUAL)
   target_link_libraries(${APP} drawer)
   target_link_libraries(${APP} SDL2)
