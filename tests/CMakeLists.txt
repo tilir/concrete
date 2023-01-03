@@ -9,12 +9,20 @@
 #
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+#
+# readbst app
+#
+#------------------------------------------------------------------------------
+
+# test for reading permutation and output of edge list
 add_test(
   NAME readbst_test
   COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst"
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 set_tests_properties(readbst_test PROPERTIES DEPENDS readbst)
 
+# test for reading permutation backward and output of edge list
 add_test(
   NAME readbst_back_test
   COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst-back -a -back"
@@ -36,3 +44,27 @@ add_test(
   COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/readbst -f ${CMAKE_CURRENT_SOURCE_DIR}/readbst-ibrac -a -ibrac"
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 set_tests_properties(readbst_brac_test PROPERTIES DEPENDS readbst)
+
+#------------------------------------------------------------------------------
+#
+# permloops app
+#
+#------------------------------------------------------------------------------
+
+add_test(
+  NAME permloops_test
+  COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/permloops -f ${CMAKE_CURRENT_SOURCE_DIR}/permloops"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(permloops_test PROPERTIES DEPENDS permloops)
+
+#------------------------------------------------------------------------------
+#
+# invperm app
+#
+#------------------------------------------------------------------------------
+
+add_test(
+  NAME invperm_test
+  COMMAND bash -c "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb -t ${CMAKE_BINARY_DIR}/apps/invperm -f ${CMAKE_CURRENT_SOURCE_DIR}/invperm"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(invperm_test PROPERTIES DEPENDS invperm)

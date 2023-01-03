@@ -19,6 +19,9 @@ target_include_directories(frame INTERFACE framework)
 add_library(treelib INTERFACE)
 target_include_directories(treelib INTERFACE trees)
 
+add_library(permlib INTERFACE)
+target_include_directories(permlib INTERFACE permutations)
+
 if(VISUAL)
 # library for drawing
 add_subdirectory(drawer)
