@@ -94,6 +94,14 @@ public:
       L.apply(tbeg, tend);
   }
 
+  // return plain permutation format like 7 1 5 3 2 8 4 6
+  std::vector<T> present_as_perm() const {
+    std::vector<T> Vec(T::Max());
+    std::iota(Vec.begin(), Vec.end(), 1);
+    apply(Vec.begin(), Vec.end());
+    return Vec;
+  }
+
   // true if permutation contains element
   bool contains(T elem) const;
 
@@ -208,9 +216,7 @@ template <Domain T> std::ostream &Permutation<T>::dump(std::ostream &Os) const {
 
 template <Domain T>
 std::ostream &Permutation<T>::dump_as_perm(std::ostream &Os) const {
-  std::vector<T> Vec(T::Max());
-  std::iota(Vec.begin(), Vec.end(), 1);
-  apply(Vec.begin(), Vec.end());
+  auto Vec = present_as_perm();
   for (auto Elt : Vec)
     Os << Elt << " ";
   return Os;

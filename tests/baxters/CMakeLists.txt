@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for test runs
+# CMake build system for baxters app
+# input: permutation, output: is it baxters
 #
 #------------------------------------------------------------------------------
 #
@@ -9,15 +10,8 @@
 #
 #------------------------------------------------------------------------------
 
-set(TEST_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb")
-
-# basic trees
-add_subdirectory(readbst)
-add_subdirectory(readbst-back)
-add_subdirectory(readbst-topo)
-add_subdirectory(readbst-ibrac)
-
-# permutations
-add_subdirectory(permloops)
-add_subdirectory(invperm)
-add_subdirectory(baxters)
+add_test(
+  NAME is-baxters_test
+  COMMAND bash -c "${TEST_SCRIPT} -t ${is-baxters_app} -f ${CMAKE_CURRENT_SOURCE_DIR}"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(is-baxters_test PROPERTIES DEPENDS is-baxters)
