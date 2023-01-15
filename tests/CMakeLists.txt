@@ -21,5 +21,7 @@ add_subdirectory(readbst-batch)
 # permutations
 add_subdirectory(permloops)
 add_subdirectory(invperm)
-add_subdirectory(baxters)
 add_subdirectory(allperms)
+add_subdirectory(baxters)
+add_subdirectory(baxters-batch)
+add_subdirectory(baxters-filt)

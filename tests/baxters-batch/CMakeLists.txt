@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for baxters app test
+# CMake build system for baxters app, batch + combine
+# tests for batch input, lot of permutations to lot of annotated permutations
 #
 #------------------------------------------------------------------------------
 #
@@ -10,7 +11,7 @@
 #------------------------------------------------------------------------------
 
 add_test(
-  NAME is-baxters_test
-  COMMAND bash -c "${TEST_SCRIPT} -t ${is-baxters_app} -f ${CMAKE_CURRENT_SOURCE_DIR}"
+  NAME baxters_batch_combine_test
+  COMMAND bash -c "${TEST_SCRIPT} -t ${is-baxters_app} -f ${CMAKE_CURRENT_SOURCE_DIR} -a -batch -a -combine"
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-set_tests_properties(is-baxters_test PROPERTIES DEPENDS ${is-baxters_app})
+set_tests_properties(baxters_batch_combine_test PROPERTIES DEPENDS ${is-baxters_app})

@@ -24,46 +24,94 @@
 
 namespace {
 
+constexpr bool DEF_BATCH = false;
+constexpr bool DEF_COMBINE = false;
+constexpr bool DEF_FILTER = false;
 constexpr bool DEF_VERBOSE = false;
 
 struct Config {
+  bool Batch = DEF_BATCH;
+  bool Combine = DEF_COMBINE;
+  bool Filter = DEF_FILTER;
   bool Verbose = DEF_VERBOSE;
 };
 
 Config parse_cfg(int argc, char **argv) {
   Config Cfg;
   options::Parser OptParser;
+  OptParser.template add<int>("batch", DEF_BATCH, "batch mode");
+  OptParser.template add<int>("combine", DEF_BATCH,
+                              "output combined perm and if Baxters");
+  OptParser.template add<int>("filter", DEF_BATCH,
+                              "output perm itself if Baxters or nothing");
   OptParser.template add<int>("verbose", DEF_VERBOSE, "a lot of debug output");
   OptParser.parse(argc, argv);
 
+  Cfg.Batch = OptParser.exists("batch");
+  Cfg.Combine = OptParser.exists("combine");
+  Cfg.Filter = OptParser.exists("filter");
   Cfg.Verbose = OptParser.exists("verbose");
   return Cfg;
 }
 
-} // namespace
+void ProcessStatus(std::istream &Is) {
+  if (Is.bad())
+    std::cerr << "I/O error while reading\n";
+  else if (!Is.eof() && Is.fail())
+    std::cerr << "Bat data encountered\n";
+}
 
-int main(int argc, char **argv) try {
-  auto Cfg = parse_cfg(argc, argv);
+using Dom = permutations::IDomain<int>;
 
-  bool Baxters = true;
-  int N;
-  std::cin >> N;
+template <std::forward_iterator It> void OutPerm(It Start) {
+  for (int I = 0; I < Dom::Max(); ++I) {
+    std::cout << *Start++;
+    if (I != Dom::Max() - 1)
+      std::cout << " ";
+  }
+}
+
+template <std::forward_iterator It>
+void OutBaxters(It Start, Config Cfg, bool Baxters) {
+  if (!Cfg.Filter && !Cfg.Combine) {
+    std::cout << Baxters << std::endl;
+    return;
+  }
+
+  if (!Cfg.Filter && Cfg.Combine) {
+    std::cout << (Baxters ? "+ " : "- ");
+    OutPerm(Start);
+    std::cout << std::endl;
+    return;
+  }
+
+  // filtered output only if Baxters
+  if (Baxters) {
+    OutPerm(Start);
+    std::cout << std::endl;
+  }
+}
+
+// read permutation in given domain, check if Baxters
+bool Check(Config Cfg) {
+  int N = Dom::Max();
   std::vector<int> Vec(N);
-
-  for (int I = 0; I < N; ++I)
+  for (int I = 0; I < N; ++I) {
     std::cin >> Vec[I];
-
-  using Dom = permutations::IDomain<int>;
-  Dom::init(N);
+    if (!std::cin) {
+      ProcessStatus(std::cin);
+      return false;
+    }
+  }
 
   // all 1, 2 and 3-perms are Baxters by design
   if (Dom::Max() < 4) {
-    std::cout << Baxters << std::endl;
-    return 0;
+    OutBaxters(Vec.begin(), Cfg, true);
+    return true;
   }
 
   // search for counter examples
-  for (int I = 1; (I < Dom::Max()) && Baxters; ++I) {
+  for (int I = 1; I < Dom::Max(); ++I) {
     auto IdxI = std::ranges::find(Vec, I);
     auto IdxIp = std::ranges::find(Vec, I + 1);
 
@@ -79,8 +127,8 @@ int main(int argc, char **argv) try {
         if (*It > *IdxI)
           Big = true;
         if (*It < *IdxI && Big) {
-          Baxters = false;
-          break;
+          OutBaxters(Vec.begin(), Cfg, false);
+          return true;
         }
       }
     }
@@ -90,14 +138,58 @@ int main(int argc, char **argv) try {
         if (*It < *IdxI)
           Small = true;
         if (*It > *IdxI && Small) {
-          Baxters = false;
-          break;
+          OutBaxters(Vec.begin(), Cfg, false);
+          return true;
         }
       }
     }
   }
 
-  std::cout << Baxters << std::endl;
+  OutBaxters(Vec.begin(), Cfg, true);
+  return true;
+}
+
+bool DomReinit() {
+  int N;
+  std::cin >> N;
+  if (!std::cin) {
+    ProcessStatus(std::cin);
+    return false;
+  }
+  Dom::init(N);
+  return true;
+}
+
+} // namespace
+
+int main(int argc, char **argv) try {
+  auto Cfg = parse_cfg(argc, argv);
+
+  // if we are filtering or combining we need make things machine-readable
+  // by producing max in first line
+  bool NeedMax = Cfg.Filter || Cfg.Combine;
+
+  if (!DomReinit())
+    return -1;
+
+  if (NeedMax)
+    std::cout << Dom::Max() << std::endl;
+
+  for (;;) {
+    // read permutation and check if Baxters
+    if (!Check(Cfg))
+      break;
+
+    // if not batch mode we need to read N before next in file
+    if (!Cfg.Batch) {
+      if (!DomReinit())
+        break;
+
+      // and probably output new N
+      if (NeedMax)
+        std::cout << Dom::Max() << std::endl;
+    }
+  }
 } catch (const std::runtime_error &E) {
   std::cout << "Runtime error: " << E.what() << "\n";
   return -1;
