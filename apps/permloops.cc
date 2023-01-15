@@ -47,21 +47,22 @@ int main(int argc, char **argv) try {
 
   int N;
   std::cin >> N;
-  std::vector<int> Vec(N);
+
+  using Dom = permutations::IDomain<int>;
+  Dom::init(N);
+
+  std::vector<Dom> Vec(N);
 
   for (int I = 0; I < N; ++I)
     std::cin >> Vec[I];
 
-  using Dom = permutations::IDomain<int>;
-  Dom::init(N);
   using PL = permutations::PermLoop<Dom>;
   std::vector<PL> Loops;
 
   permutations::create_loops(Vec.begin(), Vec.end(), std::back_inserter(Loops));
 
-  for (auto &&L : Loops) {
+  for (auto &&L : Loops)
     std::cout << L;
-  }
   std::cout << std::endl;
 } catch (const std::runtime_error &E) {
   std::cout << "Runtime error: " << E.what() << "\n";
