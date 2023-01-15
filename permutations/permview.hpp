@@ -1,8 +1,6 @@
 //------------------------------------------------------------------------------
 //
-// Simple combinatorial object views
-// Just indices, not sophisticated domains etc
-// * over all permutations 1..n
+// Simple view over all permutations, using explicit form (not loops)
 //
 //------------------------------------------------------------------------------
 //
@@ -20,21 +18,23 @@
 #include <ranges>
 #include <vector>
 
-namespace cviews {
+#include "idomain.hpp"
+
+namespace permutations {
 
 namespace ranges = std::ranges;
 namespace views = std::views;
 
 struct PermutationsSentinel {};
 
-class PermutationsGenerator {
-  std::vector<int> State;
-  using STT = std::vector<int>;
+template <Domain T> class PermutationsGenerator {
+  std::vector<T> State;
+  using STT = std::vector<T>;
   bool Proceed = true;
 
 public:
-  PermutationsGenerator(int N = 1) : State(N) {
-    std::iota(State.begin(), State.end(), 1);
+  explicit PermutationsGenerator() : State(T::Max() - T::Min() + 1) {
+    std::iota(State.begin(), State.end(), T::Min());
   }
 
   template <std::forward_iterator It>
@@ -45,7 +45,7 @@ public:
   PermutationsGenerator &operator++() {
     Proceed = std::next_permutation(State.begin(), State.end());
     if (!Proceed)
-      std::iota(State.begin(), State.end(), 1);
+      std::iota(State.begin(), State.end(), T::Min());
     return *this;
   }
 
@@ -62,38 +62,36 @@ public:
   bool proceed() const { return Proceed; }
 };
 
-inline bool operator==(const PermutationsGenerator &Lhs,
-                       const PermutationsGenerator &Rhs) {
+template <Domain T>
+bool operator==(const PermutationsGenerator<T> &Lhs,
+                const PermutationsGenerator<T> &Rhs) {
   return Lhs.equals(Rhs) && Lhs.proceed() == Rhs.proceed();
 }
 
-inline bool operator!=(const PermutationsGenerator &Lhs,
-                       const PermutationsGenerator &Rhs) {
+template <Domain T>
+bool operator!=(const PermutationsGenerator<T> &Lhs,
+                const PermutationsGenerator<T> &Rhs) {
   return !(Lhs == Rhs);
 }
 
-inline bool operator==(const PermutationsGenerator &Lhs,
-                       const PermutationsSentinel &Rhs) {
+template <Domain T>
+bool operator==(const PermutationsGenerator<T> &Lhs,
+                const PermutationsSentinel &Rhs) {
   return (Lhs.proceed() == false);
 }
 
-inline bool operator!=(const PermutationsGenerator &Lhs,
-                       const PermutationsSentinel &Rhs) {
+template <Domain T>
+bool operator!=(const PermutationsGenerator<T> &Lhs,
+                const PermutationsSentinel &Rhs) {
   return !(Lhs == Rhs);
 }
 
-class permutations_view : public ranges::view_interface<permutations_view> {
-  int N;
-
-public:
-  using iterator = PermutationsGenerator;
+template <Domain T>
+struct permutations_view : public ranges::view_interface<permutations_view<T>> {
+  using iterator = PermutationsGenerator<T>;
   using sentinel = PermutationsSentinel;
-
-  permutations_view(int P) : N(P) {}
-
-  iterator begin() { return PermutationsGenerator(N); }
-
-  sentinel end() { return PermutationsSentinel{}; }
+  iterator begin() { return iterator{}; }
+  sentinel end() { return sentinel{}; }
 };
 
-} // namespace cviews
+} // namespace permutations
