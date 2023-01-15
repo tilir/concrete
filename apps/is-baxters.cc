@@ -22,6 +22,8 @@
 #include <ranges>
 #include <vector>
 
+namespace ranges = std::ranges;
+
 namespace {
 
 constexpr bool DEF_BATCH = false;
@@ -112,35 +114,36 @@ bool Check(Config Cfg) {
 
   // search for counter examples
   for (int I = 1; I < Dom::Max(); ++I) {
-    auto IdxI = std::ranges::find(Vec, I);
-    auto IdxIp = std::ranges::find(Vec, I + 1);
+    auto IdxI = ranges::find(Vec, I);
+    auto IdxIp = ranges::find(Vec, I + 1);
 
     assert(IdxI != Vec.end());
     assert(IdxIp != Vec.end());
 
-    bool Small = false;
-    bool Big = false;
+    // interesting: we may capture and test IdxIp as well
+    auto BigCond = [IdxI](auto V) { return V > *IdxI; };
+    auto SmallCond = [IdxI](auto V) { return V < *IdxI; };
 
     // IdxI big small IdxIp
-    if (IdxIp > IdxI && IdxIp > std::next(IdxI)) {
-      for (auto It = std::next(IdxI); It != IdxIp; ++It) {
-        if (*It > *IdxI)
-          Big = true;
-        if (*It < *IdxI && Big) {
-          OutBaxters(Vec.begin(), Cfg, false);
-          return true;
-        }
+    if (IdxIp > IdxI) {
+      auto SubVec = ranges::subrange(std::next(IdxI), IdxIp);
+      auto BigIt = ranges::find_if(SubVec, BigCond);
+      SubVec = ranges::subrange(BigIt, IdxIp);
+      auto SmallIt = ranges::find_if(SubVec, SmallCond);
+      if (SmallIt != IdxIp) {
+        OutBaxters(Vec.begin(), Cfg, false);
+        return true;
       }
     }
     // IdxIp small big IdxI
-    else if (IdxI > IdxIp && IdxI > std::next(IdxIp)) {
-      for (auto It = std::next(IdxIp); It != IdxI; ++It) {
-        if (*It < *IdxI)
-          Small = true;
-        if (*It > *IdxI && Small) {
-          OutBaxters(Vec.begin(), Cfg, false);
-          return true;
-        }
+    else if (IdxI > IdxIp) {
+      auto SubVec = ranges::subrange(std::next(IdxIp), IdxI);
+      auto SmallIt = ranges::find_if(SubVec, SmallCond);
+      SubVec = ranges::subrange(SmallIt, IdxI);
+      auto BigIt = ranges::find_if(SubVec, BigCond);
+      if (BigIt != IdxI) {
+        OutBaxters(Vec.begin(), Cfg, false);
+        return true;
       }
     }
   }
