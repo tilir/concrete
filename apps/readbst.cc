@@ -25,6 +25,7 @@ constexpr bool DEF_BACK = false;
 constexpr bool DEF_IBRAC = false;
 constexpr bool DEF_DOT = false;
 constexpr bool DEF_TOPO = false;
+constexpr bool DEF_BATCH = false;
 constexpr bool DEF_VERBOSE = false;
 
 enum class InpKind { PERM, BRACES };
@@ -33,8 +34,9 @@ enum class DumpKind { EDGELIST, DOT, TOPO };
 
 struct Config {
   bool Back = DEF_BACK;
-  InpKind InpType = InpKind::PERM;
+  bool Batch = DEF_BATCH;
   DumpKind DumpType = DumpKind::EDGELIST;
+  InpKind InpType = InpKind::PERM;
   bool Verbose = DEF_VERBOSE;
 };
 
@@ -42,6 +44,8 @@ Config parse_cfg(int argc, char **argv) {
   Config Cfg;
   options::Parser OptParser;
   OptParser.template add<int>("back", DEF_BACK, "read input backwards");
+  OptParser.template add<int>("batch", DEF_BATCH,
+                              "batch mode: single N then one by one");
   OptParser.template add<int>("ibrac", DEF_IBRAC, "input braced string");
   OptParser.template add<int>("dot", DEF_DOT, "output dot file");
   OptParser.template add<int>("topo", DEF_TOPO, "output braced topology");
@@ -49,6 +53,7 @@ Config parse_cfg(int argc, char **argv) {
   OptParser.parse(argc, argv);
 
   Cfg.Back = OptParser.exists("back");
+  Cfg.Batch = OptParser.exists("batch");
   bool HasDot = OptParser.exists("dot");
   bool HasTopo = OptParser.exists("topo");
   bool HasIbrac = OptParser.exists("ibrac");
@@ -69,24 +74,36 @@ Config parse_cfg(int argc, char **argv) {
   return Cfg;
 }
 
+void ProcessStatus(std::istream &Is) {
+  if (Is.bad())
+    std::cerr << "I/O error while reading\n";
+  else if (!Is.eof() && Is.fail())
+    std::cerr << "Bat data encountered\n";
+}
+
 // step of batch execution
-bool BatchStep(std::istream &Is, std::ostream &Os, const Config &Cfg) {
+bool BatchStep(int N, std::istream &Is, std::ostream &Os, const Config &Cfg) {
   std::optional<trees::TabTree<int>> Tree = std::nullopt;
+
+  if (!Cfg.Batch) {
+    Is >> N;
+    if (!Is) {
+      ProcessStatus(Is);
+      return false;
+    }
+  }
 
   switch (Cfg.InpType) {
   case InpKind::BRACES:
-    Tree = trees::read_bst_braced<int>(Is, Cfg.Back);
+    Tree = trees::read_bst_braced<int>(N, Is, Cfg.Back);
     break;
   default:
-    Tree = trees::read_bst_ordered<int>(Is, Cfg.Back);
+    Tree = trees::read_bst_ordered<int>(N, Is, Cfg.Back);
     break;
   }
 
   if (!Tree) {
-    if (Is.bad())
-      std::cerr << "I/O error while reading\n";
-    else if (!Is.eof() && Is.fail())
-      std::cerr << "Bat data encountered\n";
+    ProcessStatus(Is);
     return false;
   }
 
@@ -95,7 +112,7 @@ bool BatchStep(std::istream &Is, std::ostream &Os, const Config &Cfg) {
     Tree->dumpDot(Os);
     break;
   case DumpKind::TOPO:
-    Tree->dumpTopo(Os);
+    Tree->dumpTopo(Os, Cfg.Batch);
     break;
   default:
     Tree->dumpEL(Os);
@@ -108,7 +125,16 @@ bool BatchStep(std::istream &Is, std::ostream &Os, const Config &Cfg) {
 
 int main(int argc, char **argv) try {
   auto Cfg = parse_cfg(argc, argv);
-  while (BatchStep(std::cin, std::cout, Cfg)) {
+  int N = 0;
+  if (Cfg.Batch) {
+    std::cin >> N;
+    if (!std::cin) {
+      ProcessStatus(std::cin);
+      return 0;
+    }
+    std::cout << N << std::endl;
+  }
+  while (BatchStep(N, std::cin, std::cout, Cfg)) {
   }
 } catch (const trees::tree_error_base &T) {
   std::cout << "Tree error: " << T.what() << " at key: ";

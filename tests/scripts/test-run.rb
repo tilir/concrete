@@ -68,7 +68,7 @@ def parse_options
     opts.banner = "Usage: test-run.rb [options]"
 
     opts.on("-a", "--addargs ARGS", "Additional arguments to pass to testing program.") do |v|
-      options[:addargs] = v
+      options[:addargs] << " #{v}"
     end
 
     opts.on("-e", "--etafile PATH", "Full path to etalon result.") do |v|
