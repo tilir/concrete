@@ -30,8 +30,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
-#include <concepts>
 #include <iostream>
 #include <iterator>
 #include <numeric>
@@ -40,55 +38,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace permutations {
-
-//------------------------------------------------------------------------------
-//
-// Integral domain -- simplect version, nonfixed bound (need to call init)
-//
-//------------------------------------------------------------------------------
-
-template <std::integral T> class IDomain {
-  static T M;
-  T Val;
-
-public:
-  using type = T;
-
-  static void init(T Max) { M = Max; }
-  static T Max() { return M; }
-
-  constexpr IDomain(T V = 1) : Val(V) { assert(V >= 1 && V <= M); }
-  constexpr operator T() const { return Val; }
-
-  // do not define this: ambiguity vs builtin operator can happen
-  // constexpr auto operator<=>(const IDomain &) const = default;
-};
-
-template <std::integral T> inline T IDomain<T>::M = 1;
-
-template <typename T> concept Domain = requires(T D) {
-  T::Max();
-  typename T::type;
-};
-
-template <std::integral T>
-inline std::ostream &operator<<(std::ostream &Os, IDomain<T> Elt) {
-  T Underlying = Elt;
-  Os << Underlying;
-  return Os;
-}
-
-} // namespace permutations
-
-namespace std {
-template <std::integral T> struct hash<permutations::IDomain<T>> {
-  std::size_t operator()(const permutations::IDomain<T> &K) const {
-    std::hash<T> H;
-    return H(K);
-  }
-};
-} // namespace std
+#include "idomain.hpp"
 
 namespace permutations {
 
@@ -284,14 +234,15 @@ template <Domain T> T PermLoop<T>::apply(T Val) const {
 template <Domain T>
 template <std::random_access_iterator RandIt>
 void PermLoop<T>::apply(RandIt B, RandIt E) const {
-  assert(Loop.front() >= 1);
+  assert(T::Max() > T::Min());
+  assert(Loop.front() >= T::Min());
   assert(Loop.back() <= T::Max());
-  assert(E - B == T::Max());
-  size_t Nxt = Loop.front() - 1;
+  assert(E - B == T::Max() - T::Min() + 1);
+  size_t Nxt = Loop.front() - T::Min();
   T Tmp = B[Nxt];
   for (auto L : Loop) {
     size_t Prev = Nxt;
-    Nxt = L - 1;
+    Nxt = L - T::Min();
     if (L == Loop.front())
       continue;
     B[Prev] = B[Nxt];
@@ -350,18 +301,19 @@ template <std::random_access_iterator RandIt,
           std::input_or_output_iterator OutIt>
 void create_loops(RandIt B, RandIt E, OutIt O) {
   using T = typename std::decay<decltype(*B)>::type;
+  static_assert(Domain<T>);
   using OutT = typename OutIt::container_type::value_type;
   std::vector<bool> Marked(E - B, false);
 
   for (auto Mit = Marked.begin(); Mit != Marked.end();
        Mit = std::find(Mit + 1, Marked.end(), false)) {
     auto Relt = Mit - Marked.begin();
-    auto P = static_cast<T>(1 + Relt);
+    auto P = static_cast<T>(T::Min() + Relt);
     OutT Perm = {P};
     Marked[Relt] = true;
-    for (T Nxt = B[Relt]; Nxt != P; Nxt = B[Nxt - 1]) {
+    for (T Nxt = B[Relt]; Nxt != P; Nxt = B[Nxt - T::Min()]) {
       Perm.add(Nxt);
-      Marked[Nxt - 1] = true;
+      Marked[Nxt - T::Min()] = true;
     }
     *O = Perm;
     O++;
@@ -372,8 +324,8 @@ template <std::random_access_iterator RandIt,
           std::input_or_output_iterator OutIt>
 void simplify_loops(RandIt B, RandIt E, OutIt O) {
   using T = typename std::decay<decltype(*B)>::type::value_type;
-  std::vector<T> Table(T::Max(), 1);
-  std::iota(Table.begin(), Table.end(), 1);
+  std::vector<T> Table(T::Max() - T::Min() + 1, T::Min());
+  std::iota(Table.begin(), Table.end(), T::Min());
   for (auto Loopit = std::make_reverse_iterator(E);
        Loopit != std::make_reverse_iterator(B); ++Loopit)
     Loopit->apply(Table.begin(), Table.end());

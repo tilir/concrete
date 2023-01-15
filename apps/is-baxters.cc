@@ -10,6 +10,7 @@
 //
 //------------------------------------------------------------------------------
 
+#include "baxters.hpp"
 #include "dice.hpp"
 #include "opts.hpp"
 #include "permutations.hpp"
@@ -21,6 +22,8 @@
 #include <random>
 #include <ranges>
 #include <vector>
+
+namespace ranges = std::ranges;
 
 namespace {
 
@@ -95,7 +98,7 @@ void OutBaxters(It Start, Config Cfg, bool Baxters) {
 // read permutation in given domain, check if Baxters
 bool Check(Config Cfg) {
   int N = Dom::Max();
-  std::vector<int> Vec(N);
+  std::vector<Dom> Vec(N);
   for (int I = 0; I < N; ++I) {
     std::cin >> Vec[I];
     if (!std::cin) {
@@ -104,48 +107,8 @@ bool Check(Config Cfg) {
     }
   }
 
-  // all 1, 2 and 3-perms are Baxters by design
-  if (Dom::Max() < 4) {
-    OutBaxters(Vec.begin(), Cfg, true);
-    return true;
-  }
-
-  // search for counter examples
-  for (int I = 1; I < Dom::Max(); ++I) {
-    auto IdxI = std::ranges::find(Vec, I);
-    auto IdxIp = std::ranges::find(Vec, I + 1);
-
-    assert(IdxI != Vec.end());
-    assert(IdxIp != Vec.end());
-
-    bool Small = false;
-    bool Big = false;
-
-    // IdxI big small IdxIp
-    if (IdxIp > IdxI && IdxIp > std::next(IdxI)) {
-      for (auto It = std::next(IdxI); It != IdxIp; ++It) {
-        if (*It > *IdxI)
-          Big = true;
-        if (*It < *IdxI && Big) {
-          OutBaxters(Vec.begin(), Cfg, false);
-          return true;
-        }
-      }
-    }
-    // IdxIp small big IdxI
-    else if (IdxI > IdxIp && IdxI > std::next(IdxIp)) {
-      for (auto It = std::next(IdxIp); It != IdxI; ++It) {
-        if (*It < *IdxI)
-          Small = true;
-        if (*It > *IdxI && Small) {
-          OutBaxters(Vec.begin(), Cfg, false);
-          return true;
-        }
-      }
-    }
-  }
-
-  OutBaxters(Vec.begin(), Cfg, true);
+  bool IsBaxters = permutations::isBaxters(Vec.begin(), Vec.end());
+  OutBaxters(Vec.begin(), Cfg, IsBaxters);
   return true;
 }
 

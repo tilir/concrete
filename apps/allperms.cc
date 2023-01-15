@@ -14,9 +14,9 @@
 //
 //------------------------------------------------------------------------------
 
-#include "cviews.hpp"
 #include "dice.hpp"
 #include "opts.hpp"
+#include "permview.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -51,7 +51,10 @@ int main(int argc, char **argv) try {
   int N;
   std::cin >> N;
 
-  cviews::permutations_view V(N);
+  using Dom = permutations::IDomain<int>;
+  Dom::init(N);
+
+  permutations::permutations_view<Dom> V;
   std::cout << N << "\n";
   for (auto P : V) {
     for (auto Elt : P)

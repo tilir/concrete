@@ -37,6 +37,7 @@
 #include <iterator>
 #include <vector>
 
+#include "idomain.hpp"
 #include "permloops.hpp"
 
 namespace permutations {
@@ -181,7 +182,7 @@ template <typename T> Permutation<T> invert(Permutation<T> Lhs) {
 //------------------------------------------------------------------------------
 
 template <Domain T> Permutation<T>::Permutation() {
-  for (auto X = 1; X <= T::Max(); ++X)
+  for (auto X = T::Min(); X <= T::Max(); ++X)
     Loops.push_back(PermLoop<T>{X});
   sortloops();
 #ifdef CHECKS
@@ -261,10 +262,13 @@ Permutation<T> &Permutation<T>::rmul(const Permutation<T> &input) {
 //------------------------------------------------------------------------------
 
 template <Domain T> void Permutation<T>::check() {
+  if (T::Min() >= T::Max())
+    throw std::runtime_error("Domain error");
+
   if (Loops.empty())
     throw std::runtime_error("Empty permutation");
 
-  for (auto X = 1; X <= T::Max(); ++X)
+  for (auto X = T::Min(); X <= T::Max(); ++X)
     if (!contains(X))
       throw std::runtime_error("Every domain element shall be covered");
 
