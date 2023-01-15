@@ -25,3 +25,6 @@ add_subdirectory(allperms)
 add_subdirectory(baxters)
 add_subdirectory(baxters-batch)
 add_subdirectory(baxters-filt)
+
+# twin trees
+add_subdirectory(readtwin)

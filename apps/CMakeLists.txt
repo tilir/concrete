@@ -19,6 +19,7 @@ set(APPS
   invperm
   is-baxters
   allperms
+  readtwin
 )
 
 foreach(APP ${APPS})

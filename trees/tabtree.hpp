@@ -286,7 +286,24 @@ public:
                    [](bool S) { return S ? '(' : ')'; });
     Os << std::endl;
   }
+
+  // dump table structure
+  template <std::random_access_iterator It, std::random_access_iterator DIt>
+  void read_structure(int &R, It LBegin, It RBegin, DIt DBegin) const {
+    R = Data[Root];
+    std::transform(Left.begin(), Left.end(), LBegin,
+                   [](int N) { return (N != -1) ? N : 0; });
+    std::transform(Right.begin(), Right.end(), RBegin,
+                   [](int N) { return (N != -1) ? N : 0; });
+    std::copy(Data.begin(), Data.end(), DBegin);
+  }
 };
+
+// this is complicated, because () reversed is not )(
+template <typename It> void brace_reverse(It VBegin, It VEnd) {
+  std::reverse(VBegin, VEnd);
+  std::transform(VBegin, VEnd, VBegin, [](bool B) { return !B; });
+}
 
 // parse proper braces and read the tree
 template <typename T>
@@ -313,8 +330,11 @@ std::optional<trees::TabTree<T>> read_bst_braced(int N, std::istream &Is,
     }
   }
 
+  // (())() is encoded to 1100100, being reversed need to have ()(()) 1011000
+  // so we are reversing [110010]0 to [010011]0, then transforming to
+  // [101100]0 and we are done.
   if (Back)
-    std::reverse(Vec.begin(), Vec.end());
+    brace_reverse(Vec.begin(), std::prev(Vec.end()));
 
   trees::TabTree<T> Ret(Vec.begin(), N);
   return Ret;
@@ -330,22 +350,29 @@ std::optional<trees::TabTree<T>> read_bst_braced(std::istream &Is, bool Back) {
   return read_bst_braced<T>(N, Is, Back);
 }
 
-// parse permutation and read the tree
 template <typename T>
-std::optional<trees::TabTree<T>> read_bst_ordered(int N, std::istream &Is,
-                                                  bool Back) {
+std::optional<std::vector<T>> read_order(int N, std::istream &Is) {
   std::vector<T> Vec(N);
-
   for (int I = 0; I < N; ++I) {
     Is >> Vec[I];
     if (!Is)
       return std::nullopt;
   }
+  return Vec;
+}
+
+// parse permutation and read the tree
+template <typename T>
+std::optional<TabTree<T>> read_bst_ordered(int N, std::istream &Is, bool Back) {
+  auto OptVec = read_order<T>(N, Is);
+  if (!OptVec)
+    return std::nullopt;
+  auto &Vec = *OptVec;
 
   if (Back)
     std::reverse(Vec.begin(), Vec.end());
 
-  trees::TabTree<T> Ret(N);
+  TabTree<T> Ret(N);
   for (int I = 0; I < N; ++I)
     Ret.addSearchOrder(Vec[I]);
   return Ret;
