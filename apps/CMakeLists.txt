@@ -18,6 +18,7 @@ set(APPS
   permloops
   invperm
   is-baxters
+  allperms
 )
 
 foreach(APP ${APPS})

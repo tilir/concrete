@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 //
-// Output random correctly output braced expression
+// Output random correctly nested braced expression
 // Format is: (()()()) or 1 1 0 1 0 1 0 0 by option
 //
 // try:
