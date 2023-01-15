@@ -13,6 +13,8 @@ require 'open3'
 require 'optparse'
 require 'tempfile'
 
+ARGV << '-h' if ARGV.empty?
+
 class TestRunner 
   def initialize(testf, inf, etaf, addargs)
     @testfile = testf
@@ -58,7 +60,6 @@ class TestRunner
     tfile.unlink
   end
 end
-
 
 def parse_options
   options = {}
