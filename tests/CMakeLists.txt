@@ -16,6 +16,7 @@ add_subdirectory(readbst)
 add_subdirectory(readbst-back)
 add_subdirectory(readbst-topo)
 add_subdirectory(readbst-ibrac)
+add_subdirectory(readbst-batch)
 
 # permutations
 add_subdirectory(permloops)

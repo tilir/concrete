@@ -214,10 +214,10 @@ public:
 
   // dump tree as a dot format to visualize
   // mark left links red, right links blue
-  void dumpDot(std::ostream &os) const {
-    os << "graph {\n";
+  void dumpDot(std::ostream &Os) const {
+    Os << "graph {\n";
     if (Root == -1) {
-      os << "}\n";
+      Os << "}\n";
       return;
     }
 
@@ -225,8 +225,8 @@ public:
     assert(Root == 0);
     std::vector<int> Ranks(Data.size(), -1);
     Ranks[Root] = 0;
-    os << "{ rank=source " << Data[Root] << "}\n";
-    os << "{ rank=sink nil }\n";
+    Os << "{ rank=source " << Data[Root] << "}\n";
+    Os << "{ rank=sink nil }\n";
     setRanks(Ranks.begin(), 0);
     std::multimap<int, int> MRanks;
     for (int I = 0; I < Data.size(); ++I)
@@ -236,16 +236,16 @@ public:
       for (int I = 1; I < *MaxRankIt; ++I) {
         auto [It, Ite] = MRanks.equal_range(I);
         if (It != Ite) {
-          os << "{ rank=same ";
+          Os << "{ rank=same ";
           for (auto EltIt = It; EltIt != Ite; ++EltIt)
-            os << Data[EltIt->second] << " ";
-          os << " }\n";
+            Os << Data[EltIt->second] << " ";
+          Os << " }\n";
         }
       }
     }
 
-    dumpELDot(os);
-    os << "}\n";
+    dumpELDot(Os);
+    Os << "}\n";
   }
 
   std::vector<bool> readTopology() const {
@@ -276,25 +276,23 @@ public:
     return Ret;
   }
 
-  void dumpTopo(std::ostream &os) const {
+  void dumpTopo(std::ostream &Os, bool Batch = false) const {
     std::vector<bool> V = readTopology();
     assert((V.size() % 2) == 0);
-    std::cout << V.size() / 2 << std::endl;
-    std::ostream_iterator<char> OsIt(std::cout, "");
+    if (!Batch)
+      Os << V.size() / 2 << std::endl;
+    std::ostream_iterator<char> OsIt(Os, "");
     std::transform(V.begin(), V.end(), OsIt,
                    [](bool S) { return S ? '(' : ')'; });
-    std::cout << std::endl;
+    Os << std::endl;
   }
 };
 
 // parse proper braces and read the tree
 template <typename T>
-std::optional<trees::TabTree<T>> read_bst_braced(std::istream &Is, bool Back) {
-  int N, M = 0;
-  Is >> N;
-  if (!Is)
-    return std::nullopt;
-
+std::optional<trees::TabTree<T>> read_bst_braced(int N, std::istream &Is,
+                                                 bool Back) {
+  int M = 0;
   N = N * 2;
   std::vector<bool> Vec(N + 1); // 2N + 1 to fit mandatory last 0
   while (M < N) {
@@ -322,14 +320,20 @@ std::optional<trees::TabTree<T>> read_bst_braced(std::istream &Is, bool Back) {
   return Ret;
 }
 
-// parse permutation and read the tree
+// parse proper braces and read N and then the tree
 template <typename T>
-std::optional<trees::TabTree<T>> read_bst_ordered(std::istream &Is, bool Back) {
+std::optional<trees::TabTree<T>> read_bst_braced(std::istream &Is, bool Back) {
   int N;
   Is >> N;
   if (!Is)
     return std::nullopt;
+  return read_bst_braced<T>(N, Is, Back);
+}
 
+// parse permutation and read the tree
+template <typename T>
+std::optional<trees::TabTree<T>> read_bst_ordered(int N, std::istream &Is,
+                                                  bool Back) {
   std::vector<T> Vec(N);
 
   for (int I = 0; I < N; ++I) {
@@ -345,6 +349,16 @@ std::optional<trees::TabTree<T>> read_bst_ordered(std::istream &Is, bool Back) {
   for (int I = 0; I < N; ++I)
     Ret.addSearchOrder(Vec[I]);
   return Ret;
+}
+
+// parse permutation and read N and then the tree
+template <typename T>
+std::optional<trees::TabTree<T>> read_bst_ordered(std::istream &Is, bool Back) {
+  int N;
+  Is >> N;
+  if (!Is)
+    return std::nullopt;
+  return read_bst_ordered<T>(N, Is, Back);
 }
 
 } // namespace trees
