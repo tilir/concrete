@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for baxters app test
+# CMake build system for allperms app test
 #
 #------------------------------------------------------------------------------
 #
@@ -10,7 +10,7 @@
 #------------------------------------------------------------------------------
 
 add_test(
-  NAME is-baxters_test
-  COMMAND bash -c "${TEST_SCRIPT} -t ${is-baxters_app} -f ${CMAKE_CURRENT_SOURCE_DIR}"
+  NAME allperms_test
+  COMMAND bash -c "${TEST_SCRIPT} -t ${allperms_app} -f ${CMAKE_CURRENT_SOURCE_DIR}"
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-set_tests_properties(is-baxters_test PROPERTIES DEPENDS is-baxters)
+set_tests_properties(allperms_test PROPERTIES DEPENDS allperms)
