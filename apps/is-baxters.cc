@@ -10,6 +10,7 @@
 //
 //------------------------------------------------------------------------------
 
+#include "baxters.hpp"
 #include "dice.hpp"
 #include "opts.hpp"
 #include "permutations.hpp"
@@ -97,7 +98,7 @@ void OutBaxters(It Start, Config Cfg, bool Baxters) {
 // read permutation in given domain, check if Baxters
 bool Check(Config Cfg) {
   int N = Dom::Max();
-  std::vector<int> Vec(N);
+  std::vector<Dom> Vec(N);
   for (int I = 0; I < N; ++I) {
     std::cin >> Vec[I];
     if (!std::cin) {
@@ -106,49 +107,8 @@ bool Check(Config Cfg) {
     }
   }
 
-  // all 1, 2 and 3-perms are Baxters by design
-  if (Dom::Max() < 4) {
-    OutBaxters(Vec.begin(), Cfg, true);
-    return true;
-  }
-
-  // search for counter examples
-  for (int I = 1; I < Dom::Max(); ++I) {
-    auto IdxI = ranges::find(Vec, I);
-    auto IdxIp = ranges::find(Vec, I + 1);
-
-    assert(IdxI != Vec.end());
-    assert(IdxIp != Vec.end());
-
-    // interesting: we may capture and test IdxIp as well
-    auto BigCond = [IdxI](auto V) { return V > *IdxI; };
-    auto SmallCond = [IdxI](auto V) { return V < *IdxI; };
-
-    // IdxI big small IdxIp
-    if (IdxIp > IdxI) {
-      auto SubVec = ranges::subrange(std::next(IdxI), IdxIp);
-      auto BigIt = ranges::find_if(SubVec, BigCond);
-      SubVec = ranges::subrange(BigIt, IdxIp);
-      auto SmallIt = ranges::find_if(SubVec, SmallCond);
-      if (SmallIt != IdxIp) {
-        OutBaxters(Vec.begin(), Cfg, false);
-        return true;
-      }
-    }
-    // IdxIp small big IdxI
-    else if (IdxI > IdxIp) {
-      auto SubVec = ranges::subrange(std::next(IdxIp), IdxI);
-      auto SmallIt = ranges::find_if(SubVec, SmallCond);
-      SubVec = ranges::subrange(SmallIt, IdxI);
-      auto BigIt = ranges::find_if(SubVec, BigCond);
-      if (BigIt != IdxI) {
-        OutBaxters(Vec.begin(), Cfg, false);
-        return true;
-      }
-    }
-  }
-
-  OutBaxters(Vec.begin(), Cfg, true);
+  bool IsBaxters = permutations::isBaxters(Vec.begin(), Vec.end());
+  OutBaxters(Vec.begin(), Cfg, IsBaxters);
   return true;
 }
 
