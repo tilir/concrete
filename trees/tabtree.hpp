@@ -290,11 +290,9 @@ public:
   // dump table structure
   template <std::random_access_iterator It, std::random_access_iterator DIt>
   void read_structure(int &R, It LBegin, It RBegin, DIt DBegin) const {
-    R = Data[Root];
-    std::transform(Left.begin(), Left.end(), LBegin,
-                   [](int N) { return (N != -1) ? N : 0; });
-    std::transform(Right.begin(), Right.end(), RBegin,
-                   [](int N) { return (N != -1) ? N : 0; });
+    R = Root;
+    std::copy(Left.begin(), Left.end(), LBegin);
+    std::copy(Right.begin(), Right.end(), RBegin);
     std::copy(Data.begin(), Data.end(), DBegin);
   }
 };
