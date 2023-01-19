@@ -74,7 +74,8 @@ bool BatchStep(int N, std::istream &Is, std::ostream &Os, const Config &Cfg) {
   if (Cfg.Baxters) {
     std::ostream_iterator<int> OsIt(std::cout, " ");
     auto B = Tree->toBaxters();
-    std::cout << N << std::endl;
+    if (!Cfg.Batch)
+      std::cout << N << std::endl;
     ranges::copy(B, OsIt);
     std::cout << std::endl;
   } else
