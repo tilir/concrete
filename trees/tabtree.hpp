@@ -56,24 +56,8 @@ template <typename T> class TabTree {
     FreePos += 1;
   }
 
-  // ineffective, may be in future I will rewrite better
-  void addSearchOrderRec(int N, T Dt) {
-    if (Dt == Data[N])
-      throw tree_error<T>("Error: duplicate key insertion", Dt);
-    if (Dt < Data[N]) {
-      if (Left[N] != -1)
-        addSearchOrderRec(Left[N], std::move(Dt));
-      else
-        addNode(Left.begin() + N, std::move(Dt));
-    } else {
-      if (Right[N] != -1)
-        addSearchOrderRec(Right[N], std::move(Dt));
-      else
-        addNode(Right.begin() + N, std::move(Dt));
-    }
-  }
-
-  // ineffective, may be in future I will rewrite better
+  // ineffective, but really not a big deal: used for dot ouput only
+  // may be in future I will rewrite better
   template <std::random_access_iterator It>
   void setRanks(It Ranks, int N) const {
     if (Left[N] != -1) {
@@ -104,20 +88,43 @@ template <typename T> class TabTree {
     }
   }
 
-  // ineffective, may be in future I will rewrite better
-  template <typename F> void visit_inord_rec(int N, F Visitor) {
-    if (Left[N] != -1)
-      visit_inord_rec(Left[N], Visitor);
-    Visitor(Data[N]);
-    if (Right[N] != -1)
-      visit_inord_rec(Right[N], Visitor);
-  }
-
-  template <typename F> void visit_inord(F Visitor) {
+  template <typename F> void visitInord(F Visitor) {
     if (Root == -1)
       return;
     assert(Root == 0);
-    visit_inord_rec(Root, Visitor);
+    std::stack<int> S;
+    int N = Root;
+    while (!S.empty() || N != -1) {
+      if (N != -1) {
+        S.push(N);
+        N = Left[N];
+      } else {
+        N = S.top();
+        Visitor(Data[N]);
+        S.pop();
+        N = Right[N];
+      }
+    }
+  }
+
+  template <std::random_access_iterator It>
+  It lookupInsertPosition(It L, It R, const T &Dt) const {
+    assert(Root == 0);
+    int N = Root;
+    for (;;) {
+      if (Dt == Data[N])
+        throw tree_error<T>("Error: duplicate key insertion", Dt);
+      if (Dt < Data[N]) {
+        if (L[N] == -1)
+          return L + N;
+        N = L[N];
+      } else {
+        if (R[N] == -1)
+          return R + N;
+        N = R[N];
+      }
+    }
+    __builtin_unreachable();
   }
 
   // main idea: putting in stack node for right and left link
@@ -169,7 +176,7 @@ public:
     reconstructTopology(Start, Sz);
 
     T CurVal = 1;
-    visit_inord([&CurVal](T &Data) { Data = CurVal++; });
+    visitInord([&CurVal](T &Data) { Data = CurVal++; });
   }
 
   void addSearchOrder(T Dt) {
@@ -182,7 +189,8 @@ public:
       return;
     }
 
-    addSearchOrderRec(Root, std::move(Dt));
+    auto It = lookupInsertPosition(Left.begin(), Right.begin(), Dt);
+    addNode(It, std::move(Dt));
   }
 
   // dump tree as edge list
@@ -298,7 +306,8 @@ public:
 };
 
 // this is complicated, because () reversed is not )(
-template <typename It> void brace_reverse(It VBegin, It VEnd) {
+template <std::random_access_iterator It>
+void brace_reverse(It VBegin, It VEnd) {
   std::reverse(VBegin, VEnd);
   std::transform(VBegin, VEnd, VBegin, [](bool B) { return !B; });
 }
