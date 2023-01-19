@@ -62,7 +62,8 @@ template <std::integral T>
 inline std::istream &operator>>(std::istream &Is, IDomain<T> &Elt) {
   T Underlying;
   Is >> Underlying;
-  Elt = Underlying;
+  if (Is)
+    Elt = Underlying;
   return Is;
 }
 
