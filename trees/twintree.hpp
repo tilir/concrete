@@ -91,16 +91,18 @@ public:
     assert(T0 == 0);
     for (;;) {
       if (Verbose)
-        std::cout << "P = " << D[T0] << std::endl;
+        std::cout << "p elt = " << D[T0] << std::endl;
       Baxters.push_back(D[T0]);
       auto [I, LR] = Parent[T0];
       if (LR == 0)
         break;
 
       if (Verbose) {
-        std::cout << "Parent is = " << I << std::endl;
-        std::cout << "L[" << T0 << "] = " << L0[T0] << std::endl;
-        std::cout << "R[" << T0 << "] = " << R0[T0] << std::endl;
+        std::cout << "parent elt is = " << D[I] << " : " << LR << std::endl;
+        std::cout << "elt L[" << T0 << "] = " << (L0[T0] != -1 ? D[L0[T0]] : 0)
+                  << std::endl;
+        std::cout << "elt R[" << T0 << "] = " << (R0[T0] != -1 ? D[R0[T0]] : 0)
+                  << std::endl;
       }
 
       if (LR > 0) {
