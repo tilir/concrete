@@ -11,15 +11,16 @@
 #------------------------------------------------------------------------------
 
 set(APPS
+  allbraces
+  allperms
   # cellular-1d <--- split to visual and normal parts
-  readbst
-  randperm
-  randbraces
-  permloops
   invperm
   is-baxters
-  allperms
+  randbraces
+  randperm
+  readbst
   readtwin
+  permloops
 )
 
 foreach(APP ${APPS})
