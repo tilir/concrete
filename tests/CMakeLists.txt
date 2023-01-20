@@ -29,3 +29,6 @@ add_subdirectory(baxters-filt)
 # twin trees
 add_subdirectory(readtwin)
 add_subdirectory(readtwin-baxters)
+
+# braces
+add_subdirectory(allbraces)
