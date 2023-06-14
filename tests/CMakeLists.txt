@@ -11,24 +11,42 @@
 
 set(TEST_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb")
 
+function(add_testrun TGT APP)
+  set(TEST_TARGET ${TGT}_test)
+  set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${TGT})
+
+  # variable ${APP}_app is defined in apps\CMakeLists.txt
+  set(APP_VAR ${${APP}_app})
+
+  # see readbst-back example
+  string (REPLACE ";" " " ARGN_FLAGS_STR "${ARGN}")
+
+  # and now bring it together
+  add_test(
+    NAME ${TEST_TARGET}
+    COMMAND bash -c "${TEST_SCRIPT} -t ${APP_VAR} -f ${TEST_DIR} ${ARGN_FLAGS_STR}"
+    WORKING_DIRECTORY ${TEST_DIR})
+  set_tests_properties(${TEST_TARGET} PROPERTIES DEPENDS ${APP})
+endfunction()
+
 # basic trees
-add_subdirectory(readbst)
-add_subdirectory(readbst-back)
-add_subdirectory(readbst-topo)
-add_subdirectory(readbst-ibrac)
-add_subdirectory(readbst-batch)
+add_testrun(readbst readbst)
+add_testrun(readbst-back readbst "-a" "-back")
+add_testrun(readbst-topo readbst "-a" "-topo")
+add_testrun(readbst-ibrac readbst "-a" "-ibrac")
+add_testrun(readbst-batch readbst "-a" "-batch" "-a" "-topo")
 
 # permutations
-add_subdirectory(permloops)
-add_subdirectory(invperm)
-add_subdirectory(allperms)
-add_subdirectory(baxters)
-add_subdirectory(baxters-batch)
-add_subdirectory(baxters-filt)
+add_testrun(permloops permloops)
+add_testrun(invperm invperm)
+add_testrun(allperms allperms)
+add_testrun(baxters is-baxters)
+add_testrun(baxters-batch is-baxters "-a" "-batch" "-a" "-combine")
+add_testrun(baxters-filt is-baxters "-a" "-batch" "-a" "-filter")
 
 # twin trees
-add_subdirectory(readtwin)
-add_subdirectory(readtwin-baxters)
+add_testrun(readtwin readtwin)
+add_testrun(readtwin-baxters readtwin "-a" "-baxters")
 
 # braces
-add_subdirectory(allbraces)
+add_testrun(allbraces allbraces)
