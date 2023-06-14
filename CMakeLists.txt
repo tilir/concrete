@@ -16,11 +16,8 @@ enable_testing()
 add_library(frame INTERFACE)
 target_include_directories(frame INTERFACE framework)
 
-add_library(treelib INTERFACE)
-target_include_directories(treelib INTERFACE trees)
-
-add_library(permlib INTERFACE)
-target_include_directories(permlib INTERFACE permutations)
+add_library(comblib INTERFACE)
+target_include_directories(comblib INTERFACE combinatorial)
 
 if(VISUAL)
 # library for drawing
