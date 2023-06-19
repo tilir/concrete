@@ -13,6 +13,7 @@
 set(APPS
   allbraces
   allperms
+  allsubsets
   # cellular-1d <--- split to visual and normal parts
   invperm
   is-baxters
