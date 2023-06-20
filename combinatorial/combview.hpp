@@ -62,6 +62,12 @@ public:
       skipr4 = true;
     }
 
+    if (K == 1) {
+      Proceed = false;
+      restart(false);
+      return *this;
+    }
+
     int j = 2;
 
     for (;;) {

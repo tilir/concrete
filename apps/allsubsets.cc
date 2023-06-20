@@ -1,13 +1,11 @@
 //------------------------------------------------------------------------------
 //
-// Input "N label1 .. labelN", output all subsets of set 0..N-1
-// Subsets batch format:
-// Number of subsets
-// subset1
-// subset2
-// ........
+// Input "N", output all subsets of set 0..N-1
+// You may add labels
 //
-// Try: echo "3 a b c" | ./allsubsets
+// Try:
+// echo "3" | ./allsubsets
+// echo "3 a b c" | ./allsubsets --labels
 //
 //------------------------------------------------------------------------------
 //
@@ -47,20 +45,23 @@ Config parse_cfg(int argc, char **argv) {
 
 } // namespace
 
+void print_subsets(Config Cfg, int N, int K) {
+  if (Cfg.Verbose)
+    std::cout << "K = " << K << std::endl;
+  auto Cs = combs::comb_view(N, K);
+  for (auto C : Cs) {
+    for (auto Elt : C)
+      std::cout << Elt << " ";
+    std::cout << "\n";
+  }
+}
+
 int main(int argc, char **argv) try {
   auto Cfg = parse_cfg(argc, argv);
-
   int N;
   std::cin >> N;
-  for (int K = 2; K < N; ++K) {
-    std::cout << "K = " << K << std::endl;
-    auto Cs = combs::comb_view(N, K);
-    for (auto C : Cs) {
-      for (auto Elt : C)
-        std::cout << Elt << " ";
-      std::cout << "\n";
-    }
-  }
+  for (int K = 1; K < N; ++K)
+    print_subsets(Cfg, N, K);
 } catch (const std::runtime_error &E) {
   std::cout << "Runtime error: " << E.what() << "\n";
   return -1;

@@ -50,3 +50,6 @@ add_testrun(readtwin-baxters readtwin "-a" "-baxters")
 
 # braces
 add_testrun(allbraces allbraces)
+
+# subsets
+add_testrun(allsubsets allsubsets)

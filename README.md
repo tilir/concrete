@@ -64,6 +64,9 @@ Below all apllications described briefly
 - permloops -- input permutation output loop format
 - randperm -- output random permutation
 
+### Combinations related
+- allsubsets -- spills all subsets of 0..(N-1) or with any labels
+
 ### Trees related
 - readbst -- application reads permutation or brace expression and outputs a tree
 - readtwin -- application reads permutation and outputs twin tree or equivalent baxters
