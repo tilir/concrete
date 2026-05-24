@@ -1,4 +1,5 @@
-name: Concrete pre-commit and post-push
+name: CI
+
 on:
   push:
     branches:
@@ -6,26 +7,94 @@ on:
   pull_request:
     branches:
       - master
+
 jobs:
-  main:
-    runs-on: ubuntu-latest
+  build-and-test:
+    name: ${{ matrix.compiler }} ${{ matrix.build_type }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: g++-14
+            package: g++-14
+            build_type: Release
+            build_dir: release-gcc
+            coverage: false
+
+          - compiler: clang++-19
+            package: clang-19
+            build_type: Debug
+            build_dir: debug-clang
+            coverage: true
+
     defaults:
       run:
         shell: bash
+
     steps:
-    - name: Install required compiler to be sure
-      run: sudo apt-get install g++-12      
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: CMake release config
-      run: cmake -S . -B release -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_BUILD_TYPE=Release
-    - name: CMake release build
-      run: cmake --build release
-    - name: CMake release test
-      run: env CTEST_OUTPUT_ON_FAILURE=1 cmake --build release --target test
-    - name: CMake debug config
-      run: cmake -S . -B debug -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_BUILD_TYPE=Release
-    - name: CMake debug build
-      run: cmake --build debug
-    - name: CMake debug test
-      run: env CTEST_OUTPUT_ON_FAILURE=1 cmake --build debug --target test
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install compiler and LLVM tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake ${{ matrix.package }} llvm-19
+
+      - name: Configure
+        run: |
+          cmake -G Ninja \
+            -S . \
+            -B ${{ matrix.build_dir }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DENABLE_COVERAGE=${{ matrix.coverage }} \
+            -DLLVM_COV=llvm-cov-19 \
+            -DLLVM_PROFDATA=llvm-profdata-19
+
+      - name: Build
+        run: cmake --build ${{ matrix.build_dir }}
+
+      - name: Test
+        if: ${{ !matrix.coverage }}
+        run: |
+          CTEST_OUTPUT_ON_FAILURE=1 \
+            cmake --build ${{ matrix.build_dir }} --target test
+
+      - name: Test with coverage
+        if: ${{ matrix.coverage }}
+        run: |
+          mkdir -p ${{ matrix.build_dir }}/profiles
+
+          LLVM_PROFILE_FILE="$PWD/${{ matrix.build_dir }}/profiles/%p.profraw" \
+          CTEST_OUTPUT_ON_FAILURE=1 \
+            cmake --build ${{ matrix.build_dir }} --target test
+
+      - name: Generate coverage report
+        if: ${{ matrix.coverage }}
+        run: |
+          cmake --build ${{ matrix.build_dir }} --target coverage-report \
+            | tee ${{ matrix.build_dir }}/coverage-report.txt
+
+      - name: Add coverage report to job summary
+        if: ${{ matrix.coverage }}
+        run: |
+          {
+            echo "## Coverage report"
+            echo
+            echo '```text'
+            cat ${{ matrix.build_dir }}/coverage-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate HTML coverage
+        if: ${{ matrix.coverage }}
+        run: cmake --build ${{ matrix.build_dir }} --target coverage-html
+
+      - name: Upload HTML coverage artifact
+        if: ${{ matrix.coverage }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-html
+          path: ${{ matrix.build_dir }}/coverage-html
