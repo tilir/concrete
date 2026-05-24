@@ -13,20 +13,18 @@ cmake_minimum_required(VERSION 3.15)
 project(computability)
 enable_testing()
 
+# framework
 add_library(frame INTERFACE)
 target_include_directories(frame INTERFACE framework)
 
+# header-only library
 add_library(comblib INTERFACE)
 target_include_directories(comblib INTERFACE combinatorial)
-
-if(VISUAL)
-# library for drawing
-add_subdirectory(drawer)
-endif()
 
 # applications
 add_subdirectory(apps)
 
+# tests
 add_subdirectory(tests)
 
 install()
