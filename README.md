@@ -4,25 +4,21 @@ Different computability and combinatorics experiments and visualizations. Pure f
 
 ## Building and testing repo
 
-Release build
+Release build and tests
 
 ```
-cmake -G Ninja -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release .
+cmake -S . -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 env CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test
 ```
 
-Debug build
+Debug build and tests
 
 ```
-cmake -G Ninja -B debug -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_BUILD_TYPE=Debug .
+cmake -S . -G Ninja -B debug -DCMAKE_BUILD_TYPE=Debug
 cmake --build debug
 env CTEST_OUTPUT_ON_FAILURE=1 cmake --build debug --target test
 ```
-
-### special configuration options
-
-- Include apps with SDL2 visualization: `-DVISUAL=1`
 
 ## Applications
 
