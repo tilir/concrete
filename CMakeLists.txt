@@ -13,6 +13,11 @@ cmake_minimum_required(VERSION 3.15)
 project(computability)
 enable_testing()
 
+# coverage
+option(ENABLE_COVERAGE "Enable Clang/LLVM source-based coverage" OFF)
+include(cmake/Coverage.cmake)
+computability_enable_coverage_if_requested()
+
 # framework
 add_library(frame INTERFACE)
 target_include_directories(frame INTERFACE framework)
@@ -27,4 +32,7 @@ add_subdirectory(apps)
 # tests
 add_subdirectory(tests)
 
+computability_add_coverage_targets_if_requested()
+
 install()
+
