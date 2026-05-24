@@ -18,6 +18,8 @@
 #include <iostream>
 #include <numeric>
 #include <ranges>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "dbgs.hpp"
@@ -39,6 +41,8 @@ public:
   explicit BracedGenerator(int NBrac, bool P = true)
       : N(NBrac), LeftMostClosing(2 * (N - 1)), ActiveTail(LeftMostClosing - 1),
         Braces(2 * N, '('), Proceed(P) {
+    if (N == 0)
+      throw std::logic_error("N == 0 not supported in BracedGenerator");
     for (int i = 0; i < N; ++i)
       Braces[2 * i + 1] = ')';
   }
@@ -51,7 +55,7 @@ public:
     // P3: simple case (p == 0)
     dbgs << "\tP3, m = " << LeftMostClosing << std::endl;
     Braces[LeftMostClosing] = ')';
-    if (Braces[LeftMostClosing - 1] == ')') {
+    if (LeftMostClosing > 0 && Braces[LeftMostClosing - 1] == ')') {
       LeftMostClosing -= 1;
       Braces[LeftMostClosing] = '(';
       return *this;
@@ -61,7 +65,7 @@ public:
     dbgs << "\tP4 start:" << Braces << std::endl;
     ActiveTail = LeftMostClosing - 1;
     int K = 2 * (N - 1);
-    while (Braces[ActiveTail] == '(' && ActiveTail >= 0) {
+    while (ActiveTail >= 0 && Braces[ActiveTail] == '(') {
       Braces[ActiveTail] = ')';
       Braces[K] = '(';
       ActiveTail = ActiveTail - 1;
@@ -108,12 +112,18 @@ inline bool operator!=(const BracedGenerator &Lhs, const BracedSentinel &Rhs) {
   return !(Lhs == Rhs);
 }
 
+inline bool operator==(const BracedSentinel &Lhs, const BracedGenerator &Rhs) {
+  return Rhs == Lhs;
+}
+
 class braced_view : public ranges::view_interface<braced_view> {
   int N;
 
 public:
   using iterator = BracedGenerator;
   using sentinel = BracedSentinel;
+  using difference_type = std::ptrdiff_t;
+
   braced_view(int NBrac) : N(NBrac) {}
   iterator begin() { return iterator{N}; }
   sentinel end() { return sentinel{}; }
