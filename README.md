@@ -7,7 +7,7 @@ Different computability and combinatorics experiments and visualizations. Pure f
 Release build
 
 ```
-cmake -G Ninja -B build -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_BUILD_TYPE=Release .
+cmake -G Ninja -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release .
 cmake --build build
 env CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test
 ```

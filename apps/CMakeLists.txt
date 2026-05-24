@@ -14,7 +14,6 @@ set(APPS
   allbraces
   allperms
   allsubsets
-  # cellular-1d <--- split to visual and normal parts
   invperm
   is-baxters
   randbraces
@@ -24,15 +23,12 @@ set(APPS
   permloops
 )
 
+set(COMPUTABILITY_APPS ${APPS} PARENT_SCOPE)
+
 foreach(APP ${APPS})
   set(${APP}_app ${CMAKE_BINARY_DIR}/apps/${APP} PARENT_SCOPE)
   add_executable(${APP} ${APP}.cc)
   target_compile_features(${APP} PRIVATE cxx_std_20)
   target_link_libraries(${APP} frame)
   target_link_libraries(${APP} comblib)
-if(VISUAL)
-  target_link_libraries(${APP} drawer)
-  target_link_libraries(${APP} SDL2)
-endif()
-
 endforeach()
