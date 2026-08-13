@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for different applications
-# Defines the command-line applications used by tests and coverage.
+# Command-line application targets shared by users, tests, and coverage.
+# The exported target list keeps coverage configuration in one place.
 #
 #------------------------------------------------------------------------------
 #

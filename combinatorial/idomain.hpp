@@ -1,6 +1,10 @@
 //------------------------------------------------------------------------------
 //
-// Integral domain
+// Runtime-bounded integral domain and checked external-input conversion.
+//
+// IDomain is intentionally lightweight: bounds are static per underlying type
+// and algorithmic preconditions are asserted rather than checked repeatedly.
+// checked_permutation performs the throwing validation required at I/O edges.
 //
 //------------------------------------------------------------------------------
 //
@@ -22,7 +26,7 @@ namespace permutations {
 
 //------------------------------------------------------------------------------
 //
-// Integral domain -- simplect version, nonfixed bound (need to call init)
+// Integral domain with non-fixed bounds; call init before constructing values.
 //
 //------------------------------------------------------------------------------
 

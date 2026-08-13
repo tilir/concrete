@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Debug stream header
+// Compile-time debug stream controlled by the ANALYZE definition.
+// With ANALYZE=0, expressions streamed through dbgs are not evaluated.
 //
 //------------------------------------------------------------------------------
 //

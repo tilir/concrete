@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+# Runs one exact CLI fixture.
+# .dat supplies stdin, .ans stdout, and optional .err/.status files describe
+# stderr and the expected process exit status.
 
 require 'open3'
 require 'optparse'

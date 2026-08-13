@@ -1,8 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Input permutation, output loop format
-// Permutation format: N a1 .. aN
-// Loops are like: (ai aj)(ax ay az av)
+// Validate a plain permutation and convert it to canonical cycle notation.
+// Input format is N followed by N elements; output resembles (a b)(c d e).
 //
 //------------------------------------------------------------------------------
 //

@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Input N, output all permutations of 1..N
-// Permutation batch format:
+// Enumerate every permutation of the integral domain 1..N.
+// Input is a positive N; output is the batch format:
 // N
 // a1 .. aN
 // b1 .. bN

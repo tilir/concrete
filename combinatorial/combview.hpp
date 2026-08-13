@@ -1,7 +1,8 @@
 //------------------------------------------------------------------------------
 //
-// Simple view over all combinations
-// Details may be found in Knuth, algorithm R from 7.2.1.3 (vol 4A)
+// C++20 view enumerating K-element combinations drawn from 0..N-1.
+// Supports the boundary cases K=0 and K=N and follows TAOCP 7.2.1.3,
+// Algorithm R (volume 4A).
 //
 //------------------------------------------------------------------------------
 //

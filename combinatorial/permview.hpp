@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Simple view over all permutations, using explicit form (not loops)
+// C++20 view enumerating all permutations of the current Domain.
+// Values are yielded in explicit table form rather than cycle form.
 //
 //------------------------------------------------------------------------------
 //

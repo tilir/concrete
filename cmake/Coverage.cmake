@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 #
-# LLVM source-based coverage support.
+# LLVM source-based coverage configuration and reporting targets.
+# Profiles are regenerated from the complete CTest suite on every report run.
 #
 #------------------------------------------------------------------------------
 

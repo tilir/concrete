@@ -1,7 +1,8 @@
 //------------------------------------------------------------------------------
 //
-// Tabulated tree: binary tree with left and right vectors
-// optimized for almost immutable trees
+// Array-backed binary search tree optimized for construction followed by reads.
+// Supports insertion-order and balanced-parenthesis topology input, plus edge,
+// Graphviz, topology, and raw-table representations.
 //
 //------------------------------------------------------------------------------
 //

@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Input permutation, output inverse permutation
-// Permutation format: N a1 .. aN
+// Validate a plain permutation and print its inverse in the same format.
+// Input/output format: N followed by the N elements on the next line.
 //
 //------------------------------------------------------------------------------
 //

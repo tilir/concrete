@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# Runs a real producer-to-consumer process pipeline and compares its stdout
+# byte-for-byte with the supplied answer file.
 
 require 'open3'
 require 'optparse'

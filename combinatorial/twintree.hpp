@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
 //
-// Twin tree is really thin wrapper around tabulated tree
-// it keeps nothing it is just topology
-//
-// about why this is required, see
-// see https://www-cs-faculty.stanford.edu/~knuth/programs/twintree-to-baxter.w
+// Pair of search-tree topologies induced by forward and reverse insertion order.
+// The representation supports conversion to a Baxter permutation without
+// modifying the caller's input range. The conversion itself is destructive.
+// Algorithm background:
+// https://www-cs-faculty.stanford.edu/~knuth/programs/twintree-to-baxter.w
 //
 //------------------------------------------------------------------------------
 //

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------
 //
-// Permutations.
+// Permutations represented as sorted canonical cycles over a Domain.
 //
 // Permutation<T> changes positions of elements from given domain T
 //
@@ -19,7 +19,11 @@
 //   * every loop is canonical
 //   * loops are sorted by first element in decreasing order
 //
-// I.e. canonical form of (3 1 6)(5 4) over domain [1, 7) is (4 5)(2)(1 6 3)
+// I.e. canonical form of (3 1 6)(5 4) over domain [1, 7] is
+// (4 5)(2)(1 6 3).
+//
+// Range-based construction assumes trusted cycles satisfying these invariants;
+// external plain permutations should cross checked_permutation first.
 //
 //------------------------------------------------------------------------------
 //

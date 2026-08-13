@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Simplify work with randomness
+// Process-wide pseudo-random engine used by the generator applications.
+// Call init before generation; explicit seeds provide reproducible sequences.
 //
 //------------------------------------------------------------------------------
 //

@@ -1,7 +1,8 @@
 //------------------------------------------------------------------------------
 //
-// Output random correctly nested braced expression
-// Format is: (()()()) or 1 1 0 1 0 1 0 0 by option
+// Generate one uniformly random balanced-parenthesis string.
+// Output is (()()()) or, with -ones, 1 1 0 1 0 1 0 0.
+// A supplied seed makes generation reproducible.
 //
 // try:
 // > ./randbraces --n=5

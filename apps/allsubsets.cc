@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Input "N", output all subsets of set 0..N-1
+// Enumerate all subsets of 0..N-1, including the empty and full subsets.
+// Input is a non-negative N; each output line contains one subset.
 // Try:
 // echo "3" | ./allsubsets
 //

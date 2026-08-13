@@ -1,3 +1,13 @@
+//------------------------------------------------------------------------------
+//
+// Deterministic library-level properties and contract-boundary regression tests.
+// Complements the exact CLI fixtures without introducing a test framework.
+//
+// This file is licensed after LGPL v3.
+// See https://www.gnu.org/licenses/lgpl-3.0.en.html for details.
+//
+//------------------------------------------------------------------------------
+
 #include "braceview.hpp"
 #include "baxters.hpp"
 #include "combview.hpp"

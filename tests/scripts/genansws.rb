@@ -1,10 +1,9 @@
 #!/usr/bin/ruby
 # -----------------------------------------------------------------------------
 #
-# Test regenerator
+# Legacy bulk answer-file regenerator for deliberate output-format changes.
 #
-# Re-populates folder if changes are so huge that all tests need to be regen
-# Use wisely
+# Re-populates a fixture folder; review generated answers before committing.
 #
 # run: genansws.rb -f ./build/apps/allperms -t ./tests/allperms/
 #

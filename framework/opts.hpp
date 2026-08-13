@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Option parsing alternative version (without boost)
+// Small dependency-free parser for -name and -name=value command-line options.
+// Registered options are stored in lexical order so help output is stable.
 //
 //------------------------------------------------------------------------------
 //
@@ -28,7 +29,7 @@ struct ValDesc {
   bool exists;
 };
 
-// Option parser incapsulates logic. This is non-boost version.
+// Parser encapsulates the complete non-Boost option-processing logic.
 class Parser final {
   bool Parsed_ = false;
 

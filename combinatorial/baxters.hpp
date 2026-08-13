@@ -1,6 +1,9 @@
 //------------------------------------------------------------------------------
 //
-// Baxter permutations service functions
+// Baxter-permutation recognition for a trusted domain permutation.
+//
+// Contract: [VBegin, VEnd) is a complete permutation of Dom::Min()..Dom::Max().
+// Validation belongs at the external-input boundary; see checked_permutation.
 //
 //------------------------------------------------------------------------------
 //

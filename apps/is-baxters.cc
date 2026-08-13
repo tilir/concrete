@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Input permutation, output is it baxter or not
-// Permutation format: N a1 .. aN
+// Validate a plain permutation and report whether it is a Baxter permutation.
+// Supports single and batch input plus boolean, combined, and filter output.
 //
 //------------------------------------------------------------------------------
 //

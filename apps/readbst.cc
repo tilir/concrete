@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------
 //
-// Read permutation from stdin and create bst
-// Permutation format: N a1 .. aN
-// Dump resulting bst to stdout (plenty of options)
+// Construct a tabulated binary search tree from an insertion order or topology.
+// Output can be an edge list, Graphviz graph, or balanced-parenthesis topology;
+// single, reverse, and batch modes are supported.
 //
 // try:
-// > ./randperm --first=1 --last=10 >& perm
+// > ./randperm --first=1 --last=10 > perm
 // > ./readbst < perm
 //
 //------------------------------------------------------------------------------

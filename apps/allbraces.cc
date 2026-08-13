@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Input N, output all correct braces
-// Braces batch format:
+// Enumerate every balanced-parenthesis string with N pairs.
+// Input is a positive N; output is the batch format:
 // N
 // ()....()
 // ........

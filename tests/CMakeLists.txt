@@ -1,5 +1,7 @@
 #------------------------------------------------------------------------------
-# CTest integration for CLI fixtures, pipelines, and library properties.
+# CTest integration for exact CLI fixtures, real process pipelines, and
+# in-process combinatorial property tests. Optional .err and .status files
+# extend the basic .dat/.ans protocol for expected failures.
 #------------------------------------------------------------------------------
 
 find_program(RUBY_EXECUTABLE NAMES ruby)
@@ -112,14 +114,47 @@ target_link_libraries(combinatorial-properties PRIVATE frame comblib)
 add_test(NAME properties.combinatorial COMMAND combinatorial-properties)
 set_tests_properties(properties.combinatorial PROPERTIES LABELS "properties")
 
-add_test(
-  NAME pipeline.allperms-baxters
-  COMMAND "${RUBY_EXECUTABLE}" "${PIPELINE_RUNNER}"
-          --producer "$<TARGET_FILE:allperms>"
-          --consumer "$<TARGET_FILE:is-baxters>"
-          --consumer-arg=-batch
-          --consumer-arg=-combine
-          --infile "${CMAKE_CURRENT_SOURCE_DIR}/pipelines/allperms-baxters.dat"
-          --etafile "${CMAKE_CURRENT_SOURCE_DIR}/pipelines/allperms-baxters.ans"
-)
-set_tests_properties(pipeline.allperms-baxters PROPERTIES LABELS "pipeline")
+function(add_pipeline_test NAME PRODUCER CONSUMER)
+  set(options)
+  set(one_value_args)
+  set(multi_value_args PRODUCER_ARGS CONSUMER_ARGS)
+  cmake_parse_arguments(PIPE "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+  set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/pipelines/${NAME}.dat")
+  set(EXPECTED "${CMAKE_CURRENT_SOURCE_DIR}/pipelines/${NAME}.ans")
+  if(NOT EXISTS "${INPUT}" OR NOT EXISTS "${EXPECTED}")
+    message(FATAL_ERROR "Missing pipeline fixture for ${NAME}")
+  endif()
+
+  set(COMMAND_ARGS
+    --producer "$<TARGET_FILE:${PRODUCER}>"
+    --consumer "$<TARGET_FILE:${CONSUMER}>"
+    --infile "${INPUT}"
+    --etafile "${EXPECTED}"
+  )
+  foreach(ARG IN LISTS PIPE_PRODUCER_ARGS)
+    list(APPEND COMMAND_ARGS --producer-arg "${ARG}")
+  endforeach()
+  foreach(ARG IN LISTS PIPE_CONSUMER_ARGS)
+    list(APPEND COMMAND_ARGS --consumer-arg "${ARG}")
+  endforeach()
+
+  add_test(
+    NAME "pipeline.${NAME}"
+    COMMAND "${RUBY_EXECUTABLE}" "${PIPELINE_RUNNER}" ${COMMAND_ARGS}
+  )
+  set_tests_properties("pipeline.${NAME}" PROPERTIES LABELS "pipeline;${NAME}")
+endfunction()
+
+add_pipeline_test(allperms-baxters allperms is-baxters
+  CONSUMER_ARGS -batch -combine)
+add_pipeline_test(randperm-invperm randperm invperm
+  PRODUCER_ARGS -last=8 -seed=17)
+add_pipeline_test(randperm-readbst randperm readbst
+  PRODUCER_ARGS -last=8 -seed=17)
+add_pipeline_test(randperm-permloops randperm permloops
+  PRODUCER_ARGS -last=8 -seed=17)
+add_pipeline_test(allbraces-readbst allbraces readbst
+  CONSUMER_ARGS -batch -ibrac -topo)
+add_pipeline_test(allperms-readtwin allperms readtwin
+  CONSUMER_ARGS -batch -baxters)

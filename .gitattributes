@@ -1,2 +1,3 @@
 *.ans whitespace=-trailing-space
 combinatorial/permloops.hpp whitespace=cr-at-eol
+combinatorial/permutations.hpp whitespace=cr-at-eol

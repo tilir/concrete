@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
 //
-// Read permutation from stdin and create twin trees
-// Permutation format: N a1 .. aN
-// Dump resulting twins to stdout (plenty of options)
+// Construct forward and backward search trees from one insertion order.
+// Prints their table representation or the corresponding Baxter permutation;
+// supports the shared single and batch permutation formats.
 //
 //------------------------------------------------------------------------------
 //

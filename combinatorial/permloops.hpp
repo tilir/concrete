@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
 //
-// Permutation loops.
+// Canonical cycle representation and algorithms over trusted permutations.
 //
 // Permutation loop like (a c d) encodes permutation
 //
 // a b c d e
 // c b d a e
 //
-// i.e. fixes umentioned points and permutes a --> c --> d --> a
+// i.e. fixes unmentioned points and permutes a --> c --> d --> a
 //
 // Loops (a c d), (d a c) and (c d a) are equivalent. First is normal, i.e.
 // it has smallest element first and serves as class representative
@@ -17,8 +17,9 @@
 // * all elements in loop are unique
 // * first element is smallest one
 //
-// use -DCHECKS to build with expensive runtime checks of this assumptions on
-// creation and on any modification
+// create_loops has the contract that its input is a complete permutation of
+// the current domain. Validate external data with checked_permutation first.
+// Define CHECKS to enable expensive cycle-invariant checks after mutations.
 //
 //------------------------------------------------------------------------------
 //
@@ -86,7 +87,7 @@ public:
   T apply(T x) const;
 
   // permute on table with loop
-  // this is more effective then element-wise application
+  // this is more efficient than element-wise application
   template <std::random_access_iterator RandIt>
   void apply(RandIt tbeg, [[maybe_unused]] RandIt tend) const;
 

@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Output random permutation (default is 1 .. N)
-// Permutation format: N a1 .. aN
+// Shuffle an inclusive integer interval (1..10 by default).
+// Output uses the shared permutation format: N followed by N elements.
 //
 // try:
 // > ./randperm --last=10

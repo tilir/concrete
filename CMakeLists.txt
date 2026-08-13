@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------------
 #
-# CMake build system for computability experiments
+# Top-level C++20 build for the header libraries, CLI applications, tests,
+# sanitizers, warnings, and optional LLVM coverage instrumentation.
 #
 #------------------------------------------------------------------------------
 #
@@ -9,7 +10,7 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.20)
 project(computability LANGUAGES CXX)
 
 include(CTest)

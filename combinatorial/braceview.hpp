@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //
-// Simple view over all correct braced expressions
-// Based on TAOCP 7.2.1.6 - P
+// C++20 view enumerating balanced-parenthesis strings with a fixed pair count.
+// Based on TAOCP 7.2.1.6, Algorithm P. A pair count must be positive.
 //
 //------------------------------------------------------------------------------
 //
