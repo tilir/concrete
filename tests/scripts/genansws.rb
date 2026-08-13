@@ -65,12 +65,13 @@ def main
 
   dat = Dir["#{options[:topdir]}/*.dat"]
 
-  raise "You need some dat files in #{options[:topdir]} folder" if dat.nil?
+  raise "You need some dat files in #{options[:topdir]} folder" if dat.empty?
 
   dat.each do |s| 
     outf = "#{File.dirname(s)}/#{File.basename(s, ".dat")}.ans"
     puts "generating #{outf} from #{s}"
-    system(%("#{options[:filename]}" #{options[:addargs]} < #{s} > #{outf}))
+    success = system(%("#{options[:filename]}" #{options[:addargs]} < #{s} > #{outf}))
+    raise "Failed to generate #{outf}" unless success
   end
 end
 

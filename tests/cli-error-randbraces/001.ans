@@ -1,0 +1,6 @@
+Available options:
+-n( = 5) : number of brace pairs
+-ones( = 0) : Use 1 and 0 instead of ( and )
+-seed( = 0) : optional seed to be reproducible
+-verbose( = 0) : a lot of debug output
+Runtime error: Wrong options

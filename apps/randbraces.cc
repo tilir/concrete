@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <random>
 #include <vector>
@@ -53,7 +54,10 @@ Config parse_cfg(int argc, char **argv) {
   Cfg.ZeroOne = OptParser.exists("ones");
   Cfg.SeedExists = OptParser.exists("seed");
   Cfg.Verbose = OptParser.exists("verbose");
-  Cfg.N = OptParser.get<int>("n") * 2;
+  const int PairCount = OptParser.get<int>("n");
+  if (PairCount <= 0 || PairCount > std::numeric_limits<int>::max() / 2)
+    throw std::runtime_error("Brace-pair count shall be positive");
+  Cfg.N = PairCount * 2;
   Cfg.Seed = OptParser.get<int>("seed");
   return Cfg;
 }

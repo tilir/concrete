@@ -10,12 +10,15 @@
 //
 //------------------------------------------------------------------------------
 
+#pragma once
+
 #include <algorithm>
 #include <cassert>
 #include <concepts>
 #include <iostream>
 #include <numeric>
 #include <ranges>
+#include <stdexcept>
 #include <vector>
 
 #include "dbgs.hpp"
@@ -27,6 +30,12 @@ namespace views = std::views;
 
 struct CombinationsSentinel {};
 
+inline std::size_t combination_storage_size(int N, int K) {
+  if (N < 0 || K < 0 || K > N)
+    throw std::invalid_argument("Expected 0 <= K <= N");
+  return static_cast<std::size_t>(K) + 1;
+}
+
 class CombinationsGenerator {
   std::vector<int> Combination;
   int N, K;
@@ -34,7 +43,8 @@ class CombinationsGenerator {
 
 public:
   CombinationsGenerator(int Ns, int Ks, bool P = true)
-      : Combination(Ks + 1), N(Ns), K(Ks), Proceed(P) {
+      : Combination(combination_storage_size(Ns, Ks)), N(Ns), K(Ks),
+        Proceed(P) {
     std::iota(Combination.begin(), Combination.end(), 0);
     Combination.back() = N;
   }
@@ -47,6 +57,11 @@ public:
   }
 
   CombinationsGenerator &operator++() {
+    if (K == 0) {
+      Proceed = false;
+      restart(false);
+      return *this;
+    }
     bool skipr4 = false;
 
     if ((K % 2) == 1) {
@@ -125,7 +140,7 @@ inline bool operator!=(const CombinationsGenerator &Lhs,
 }
 
 inline bool operator==(const CombinationsGenerator &Lhs,
-                       const CombinationsSentinel &Rhs) {
+                       const CombinationsSentinel &) {
   return (Lhs.proceed() == false);
 }
 

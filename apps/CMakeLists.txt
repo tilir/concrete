@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 #
 # CMake build system for different applications
-# set env like readbst_app for parent scopr to use in testing
+# Defines the command-line applications used by tests and coverage.
 #
 #------------------------------------------------------------------------------
 #
@@ -26,9 +26,7 @@ set(APPS
 set(COMPUTABILITY_APPS ${APPS} PARENT_SCOPE)
 
 foreach(APP ${APPS})
-  set(${APP}_app ${CMAKE_BINARY_DIR}/apps/${APP} PARENT_SCOPE)
   add_executable(${APP} ${APP}.cc)
   target_compile_features(${APP} PRIVATE cxx_std_20)
-  target_link_libraries(${APP} frame)
-  target_link_libraries(${APP} comblib)
+  target_link_libraries(${APP} PRIVATE frame comblib)
 endforeach()

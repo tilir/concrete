@@ -46,10 +46,11 @@ Config parse_cfg(int argc, char **argv) {
 } // namespace
 
 int main(int argc, char **argv) try {
-  auto Cfg = parse_cfg(argc, argv);
+  parse_cfg(argc, argv);
 
-  int N;
-  std::cin >> N;
+  int N = 0;
+  if (!(std::cin >> N) || N <= 0)
+    throw std::runtime_error("Expected a positive permutation size");
 
   using Dom = permutations::IDomain<int>;
   Dom::init(N);

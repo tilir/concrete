@@ -1,0 +1,5 @@
+Available options:
+-batch( = 0) : batch mode: single N then one by one
+-baxters( = 0) : output equivalent Baxter permutation
+-verbose( = 0) : a lot of debug output
+Runtime error: Wrong options

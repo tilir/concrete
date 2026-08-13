@@ -8,6 +8,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: ${{ matrix.compiler }} ${{ matrix.build_type }}
@@ -18,16 +21,20 @@ jobs:
       matrix:
         include:
           - compiler: g++-14
-            package: g++-14
             build_type: Release
             build_dir: release-gcc
             coverage: false
 
-          - compiler: clang++-19
-            package: clang-19
+          - compiler: clang++-18
             build_type: Debug
             build_dir: debug-clang
             coverage: true
+
+          - compiler: clang++-18
+            build_type: Debug
+            build_dir: sanitizers-clang
+            coverage: false
+            sanitizers: true
 
     defaults:
       run:
@@ -35,12 +42,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
 
-      - name: Install compiler and LLVM tools
+      - name: Show toolchain versions
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build cmake ${{ matrix.package }} llvm-19
+          ${{ matrix.compiler }} --version
+          cmake --version
+          ninja --version
+          ruby --version
 
       - name: Configure
         run: |
@@ -50,26 +59,16 @@ jobs:
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DENABLE_COVERAGE=${{ matrix.coverage }} \
-            -DLLVM_COV=llvm-cov-19 \
-            -DLLVM_PROFDATA=llvm-profdata-19
+            -DENABLE_SANITIZERS=${{ matrix.sanitizers || false }} \
+            -DLLVM_COV=llvm-cov-18 \
+            -DLLVM_PROFDATA=llvm-profdata-18
 
       - name: Build
         run: cmake --build ${{ matrix.build_dir }}
 
       - name: Test
         if: ${{ !matrix.coverage }}
-        run: |
-          CTEST_OUTPUT_ON_FAILURE=1 \
-            cmake --build ${{ matrix.build_dir }} --target test
-
-      - name: Test with coverage
-        if: ${{ matrix.coverage }}
-        run: |
-          mkdir -p ${{ matrix.build_dir }}/profiles
-
-          LLVM_PROFILE_FILE="$PWD/${{ matrix.build_dir }}/profiles/%p.profraw" \
-          CTEST_OUTPUT_ON_FAILURE=1 \
-            cmake --build ${{ matrix.build_dir }} --target test
+        run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
 
       - name: Generate coverage report
         if: ${{ matrix.coverage }}
@@ -94,7 +93,7 @@ jobs:
 
       - name: Upload HTML coverage artifact
         if: ${{ matrix.coverage }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: coverage-html
           path: ${{ matrix.build_dir }}/coverage-html

@@ -79,7 +79,7 @@ public:
 
   // return true if loop contains given element
   bool contains(T Val) const {
-    return std::any_of(Loop.begin(), Loop.end(), Val);
+    return std::find(Loop.begin(), Loop.end(), Val) != Loop.end();
   }
 
   // apply loop to given element
@@ -88,7 +88,7 @@ public:
   // permute on table with loop
   // this is more effective then element-wise application
   template <std::random_access_iterator RandIt>
-  void apply(RandIt tbeg, RandIt tend) const;
+  void apply(RandIt tbeg, [[maybe_unused]] RandIt tend) const;
 
   // inherit eq comparisons from vector
   bool operator==(const PermLoop &) const = default;
@@ -176,6 +176,7 @@ void simplify_loops(RandIt B, RandIt E, OutIt O);
 
 template <Domain T>
 PermLoop<T>::PermLoop(std::initializer_list<T> Ls) : Loop(Ls) {
+  assert(!Loop.empty());
   reroll();
 #ifdef CHECKS
   check();
@@ -186,6 +187,7 @@ PermLoop<T>::PermLoop(std::initializer_list<T> Ls) : Loop(Ls) {
 template <Domain T>
 template <std::forward_iterator FwdIter>
 PermLoop<T>::PermLoop(FwdIter B, FwdIter E) : Loop(B, E) {
+  assert(!Loop.empty());
   reroll();
 #ifdef CHECKS
   check();
@@ -233,7 +235,7 @@ template <Domain T> T PermLoop<T>::apply(T Val) const {
 
 template <Domain T>
 template <std::random_access_iterator RandIt>
-void PermLoop<T>::apply(RandIt B, RandIt E) const {
+void PermLoop<T>::apply(RandIt B, [[maybe_unused]] RandIt E) const {
   assert(T::Max() > T::Min());
   assert(Loop.front() >= T::Min());
   assert(Loop.back() <= T::Max());
@@ -303,6 +305,7 @@ void create_loops(RandIt B, RandIt E, OutIt O) {
   using T = typename std::decay<decltype(*B)>::type;
   static_assert(Domain<T>);
   using OutT = typename OutIt::container_type::value_type;
+  assert(E - B == T::Max() - T::Min() + 1);
   std::vector<bool> Marked(E - B, false);
 
   for (auto Mit = Marked.begin(); Mit != Marked.end();

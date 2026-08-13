@@ -43,18 +43,20 @@ Config parse_cfg(int argc, char **argv) {
 } // namespace
 
 int main(int argc, char **argv) try {
-  auto Cfg = parse_cfg(argc, argv);
+  parse_cfg(argc, argv);
 
-  int N;
-  std::cin >> N;
+  int N = 0;
+  if (!(std::cin >> N) || N <= 0)
+    throw std::runtime_error("Expected a positive permutation size");
 
   using Dom = permutations::IDomain<int>;
   Dom::init(N);
 
-  std::vector<Dom> Vec(N);
-
+  std::vector<int> Input(N);
   for (int I = 0; I < N; ++I)
-    std::cin >> Vec[I];
+    if (!(std::cin >> Input[I]))
+      throw std::runtime_error("Incomplete permutation");
+  auto Vec = permutations::checked_permutation<Dom>(Input.begin(), Input.end());
 
   using PL = permutations::PermLoop<Dom>;
   std::vector<PL> Loops;

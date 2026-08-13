@@ -98,14 +98,15 @@ void OutBaxters(It Start, Config Cfg, bool Baxters) {
 // read permutation in given domain, check if Baxters
 bool Check(Config Cfg) {
   int N = Dom::Max();
-  std::vector<Dom> Vec(N);
+  std::vector<int> Input(N);
   for (int I = 0; I < N; ++I) {
-    std::cin >> Vec[I];
+    std::cin >> Input[I];
     if (!std::cin) {
       ProcessStatus(std::cin);
       return false;
     }
   }
+  auto Vec = permutations::checked_permutation<Dom>(Input.begin(), Input.end());
 
   bool IsBaxters = permutations::isBaxters(Vec.begin(), Vec.end());
   OutBaxters(Vec.begin(), Cfg, IsBaxters);
@@ -119,6 +120,8 @@ bool DomReinit() {
     ProcessStatus(std::cin);
     return false;
   }
+  if (N <= 0)
+    throw std::runtime_error("Expected a positive permutation size");
   Dom::init(N);
   return true;
 }

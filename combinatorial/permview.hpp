@@ -76,7 +76,7 @@ bool operator!=(const PermutationsGenerator<T> &Lhs,
 
 template <Domain T>
 bool operator==(const PermutationsGenerator<T> &Lhs,
-                const PermutationsSentinel &Rhs) {
+                const PermutationsSentinel &) {
   return (Lhs.proceed() == false);
 }
 

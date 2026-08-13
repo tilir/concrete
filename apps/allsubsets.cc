@@ -1,11 +1,8 @@
 //------------------------------------------------------------------------------
 //
 // Input "N", output all subsets of set 0..N-1
-// You may add labels
-//
 // Try:
 // echo "3" | ./allsubsets
-// echo "3 a b c" | ./allsubsets --labels
 //
 //------------------------------------------------------------------------------
 //
@@ -58,9 +55,12 @@ void print_subsets(Config Cfg, int N, int K) {
 
 int main(int argc, char **argv) try {
   auto Cfg = parse_cfg(argc, argv);
-  int N;
-  std::cin >> N;
-  for (int K = 1; K < N; ++K)
+  int N = 0;
+  if (!(std::cin >> N))
+    throw std::runtime_error("Expected subset cardinality");
+  if (N < 0)
+    throw std::runtime_error("Subset cardinality shall be non-negative");
+  for (int K = 0; K <= N; ++K)
     print_subsets(Cfg, N, K);
 } catch (const std::runtime_error &E) {
   std::cout << "Runtime error: " << E.what() << "\n";

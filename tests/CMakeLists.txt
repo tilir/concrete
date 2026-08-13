@@ -1,55 +1,125 @@
 #------------------------------------------------------------------------------
-#
-# CMake build system for test runs
-#
-#------------------------------------------------------------------------------
-#
-# This file is licensed after LGPL v3
-# Look at: https://www.gnu.org/licenses/lgpl-3.0.en.html for details
-#
+# CTest integration for CLI fixtures, pipelines, and library properties.
 #------------------------------------------------------------------------------
 
-set(TEST_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb")
+find_program(RUBY_EXECUTABLE NAMES ruby)
+if(NOT RUBY_EXECUTABLE)
+  message(FATAL_ERROR "Ruby interpreter is required to run CLI tests")
+endif()
 
-function(add_testrun TGT APP)
-  set(TEST_TARGET ${TGT}_test)
-  set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${TGT})
+set(TEST_RUNNER "${CMAKE_CURRENT_SOURCE_DIR}/scripts/test-run.rb")
+set(PIPELINE_RUNNER "${CMAKE_CURRENT_SOURCE_DIR}/scripts/pipeline-run.rb")
 
-  # variable ${APP}_app is defined in apps\CMakeLists.txt
-  set(APP_VAR ${${APP}_app})
+function(add_fixture_tests SUITE APP)
+  set(options)
+  set(one_value_args)
+  set(multi_value_args ARGS)
+  cmake_parse_arguments(FIXTURE "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
-  # see readbst-back example
-  string (REPLACE ";" " " ARGN_FLAGS_STR "${ARGN}")
+  set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${SUITE}")
+  file(GLOB INPUTS CONFIGURE_DEPENDS "${TEST_DIR}/*.dat")
+  if(NOT INPUTS)
+    message(FATAL_ERROR "No .dat fixtures found for ${SUITE}")
+  endif()
 
-  # and now bring it together
-  add_test(
-    NAME ${TEST_TARGET}
-    COMMAND bash -c "${TEST_SCRIPT} -t ${APP_VAR} -f ${TEST_DIR} ${ARGN_FLAGS_STR}"
-    WORKING_DIRECTORY ${TEST_DIR})
-  set_tests_properties(${TEST_TARGET} PROPERTIES DEPENDS ${APP})
+  foreach(INPUT IN LISTS INPUTS)
+    get_filename_component(CASE_NAME "${INPUT}" NAME_WE)
+    set(EXPECTED "${TEST_DIR}/${CASE_NAME}.ans")
+    if(NOT EXISTS "${EXPECTED}")
+      message(FATAL_ERROR "Missing expected output: ${EXPECTED}")
+    endif()
+
+    set(COMMAND_ARGS
+      --testfile "$<TARGET_FILE:${APP}>"
+      --infile "${INPUT}"
+      --etafile "${EXPECTED}"
+    )
+    if(EXISTS "${TEST_DIR}/${CASE_NAME}.err")
+      list(APPEND COMMAND_ARGS --errfile "${TEST_DIR}/${CASE_NAME}.err")
+    endif()
+    if(EXISTS "${TEST_DIR}/${CASE_NAME}.status")
+      list(APPEND COMMAND_ARGS --statusfile "${TEST_DIR}/${CASE_NAME}.status")
+    endif()
+    foreach(ARG IN LISTS FIXTURE_ARGS)
+      list(APPEND COMMAND_ARGS --arg "${ARG}")
+    endforeach()
+
+    add_test(
+      NAME "fixture.${SUITE}.${CASE_NAME}"
+      COMMAND "${RUBY_EXECUTABLE}" "${TEST_RUNNER}" ${COMMAND_ARGS}
+    )
+    set_tests_properties("fixture.${SUITE}.${CASE_NAME}" PROPERTIES LABELS "fixture;${SUITE}")
+  endforeach()
 endfunction()
 
-# basic trees
-add_testrun(readbst readbst)
-add_testrun(readbst-back readbst "-a" "-back")
-add_testrun(readbst-topo readbst "-a" "-topo")
-add_testrun(readbst-ibrac readbst "-a" "-ibrac")
-add_testrun(readbst-batch readbst "-a" "-batch" "-a" "-topo")
+add_fixture_tests(readbst readbst)
+add_fixture_tests(readbst-back readbst ARGS -back)
+add_fixture_tests(readbst-topo readbst ARGS -topo)
+add_fixture_tests(readbst-ibrac readbst ARGS -ibrac)
+add_fixture_tests(readbst-batch readbst ARGS -batch -topo)
 
-# permutations
-add_testrun(permloops permloops)
-add_testrun(invperm invperm)
-add_testrun(allperms allperms)
-add_testrun(baxters is-baxters)
-add_testrun(baxters-batch is-baxters "-a" "-batch" "-a" "-combine")
-add_testrun(baxters-filt is-baxters "-a" "-batch" "-a" "-filter")
+add_fixture_tests(permloops permloops)
+add_fixture_tests(invperm invperm)
+add_fixture_tests(allperms allperms)
+add_fixture_tests(baxters is-baxters)
+add_fixture_tests(baxters-batch is-baxters ARGS -batch -combine)
+add_fixture_tests(baxters-filt is-baxters ARGS -batch -filter)
 
-# twin trees
-add_testrun(readtwin readtwin)
-add_testrun(readtwin-baxters readtwin "-a" "-baxters")
+add_fixture_tests(readtwin readtwin)
+add_fixture_tests(readtwin-baxters readtwin ARGS -baxters)
+add_fixture_tests(allbraces allbraces)
+add_fixture_tests(allsubsets allsubsets)
+add_fixture_tests(randperm-range randperm ARGS -first=-2 -last=2 -seed=17)
+add_fixture_tests(randperm-single randperm ARGS -first=3 -last=3 -seed=17 -verbose)
+add_fixture_tests(randbraces randbraces ARGS -n=6 -seed=17)
+add_fixture_tests(randbraces-ones randbraces ARGS -n=4 -seed=2 -ones)
+add_fixture_tests(readbst-duplicate readbst)
+add_fixture_tests(readtwin-duplicate readtwin)
+add_fixture_tests(readbst-conflicting readbst ARGS -dot -topo)
+add_fixture_tests(readbst-malformed readbst)
+add_fixture_tests(readtwin-malformed readtwin)
+add_fixture_tests(readtwin-truncated readtwin)
+add_fixture_tests(cli-error-allbraces allbraces ARGS -definitely-invalid)
+add_fixture_tests(cli-error-allperms allperms ARGS -definitely-invalid)
+add_fixture_tests(cli-error-allsubsets allsubsets ARGS -definitely-invalid)
+add_fixture_tests(cli-error-invperm invperm ARGS -definitely-invalid)
+add_fixture_tests(cli-error-baxters is-baxters ARGS -definitely-invalid)
+add_fixture_tests(cli-error-randbraces randbraces ARGS -definitely-invalid)
+add_fixture_tests(cli-error-randperm randperm ARGS -definitely-invalid)
+add_fixture_tests(cli-error-readbst readbst ARGS -definitely-invalid)
+add_fixture_tests(cli-error-readtwin readtwin ARGS -definitely-invalid)
+add_fixture_tests(cli-error-permloops permloops ARGS -definitely-invalid)
+add_fixture_tests(cli-invalid-value randperm ARGS -seed=abc)
+add_fixture_tests(cli-help-substring randperm ARGS -helpful)
+add_fixture_tests(invperm-invalid-domain invperm)
+add_fixture_tests(invperm-duplicate invperm)
+add_fixture_tests(invperm-truncated invperm)
+add_fixture_tests(readbst-unbalanced readbst ARGS -ibrac)
+add_fixture_tests(randperm-invalid-range randperm ARGS -first=3 -last=2)
+add_fixture_tests(randbraces-invalid-size randbraces ARGS -n=-1)
+add_fixture_tests(allsubsets-zero allsubsets)
+add_fixture_tests(allsubsets-invalid-size allsubsets)
+add_fixture_tests(allperms-invalid-size allperms)
+add_fixture_tests(allbraces-invalid-size allbraces)
+add_fixture_tests(permloops-invalid-size permloops)
+add_fixture_tests(readtwin-invalid-size readtwin)
+add_fixture_tests(readbst-invalid-size readbst)
 
-# braces
-add_testrun(allbraces allbraces)
+add_executable(combinatorial-properties combinatorial-properties.cc)
+target_compile_features(combinatorial-properties PRIVATE cxx_std_20)
+target_compile_definitions(combinatorial-properties PRIVATE CHECKS)
+target_link_libraries(combinatorial-properties PRIVATE frame comblib)
+add_test(NAME properties.combinatorial COMMAND combinatorial-properties)
+set_tests_properties(properties.combinatorial PROPERTIES LABELS "properties")
 
-# subsets
-add_testrun(allsubsets allsubsets)
+add_test(
+  NAME pipeline.allperms-baxters
+  COMMAND "${RUBY_EXECUTABLE}" "${PIPELINE_RUNNER}"
+          --producer "$<TARGET_FILE:allperms>"
+          --consumer "$<TARGET_FILE:is-baxters>"
+          --consumer-arg=-batch
+          --consumer-arg=-combine
+          --infile "${CMAKE_CURRENT_SOURCE_DIR}/pipelines/allperms-baxters.dat"
+          --etafile "${CMAKE_CURRENT_SOURCE_DIR}/pipelines/allperms-baxters.ans"
+)
+set_tests_properties(pipeline.allperms-baxters PROPERTIES LABELS "pipeline")

@@ -60,6 +60,8 @@ Config parse_cfg(int argc, char **argv) {
 
 int main(int argc, char **argv) try {
   auto Cfg = parse_cfg(argc, argv);
+  if (Cfg.Last < Cfg.First)
+    throw std::runtime_error("Last permutation value precedes first");
   if (!Cfg.SeedExists) {
     auto Seed = rands::Dice::init();
     if (Cfg.Verbose)

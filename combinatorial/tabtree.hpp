@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <concepts>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <optional>
 #include <ranges>
@@ -50,7 +51,7 @@ template <typename T> class TabTree {
 
   // Pos is right or left link in parent
   template <std::random_access_iterator It> void addNode(It Pos, T Dt) {
-    assert(FreePos < Data.size());
+    assert(static_cast<std::size_t>(FreePos) < Data.size());
     *Pos = FreePos;
     Data[FreePos] = std::move(Dt);
     FreePos += 1;
@@ -73,7 +74,7 @@ template <typename T> class TabTree {
   // like dumpEL but unordered, with nil node and dot specifics
   // mark left links red, right links blue
   void dumpELDot(std::ostream &os) const {
-    for (int I = 0; I < Data.size(); ++I) {
+    for (std::size_t I = 0; I < Data.size(); ++I) {
       os << Data[I] << " -- ";
       if (Left[I] != -1)
         os << Data[Left[I]] << " [color = red]\n";
@@ -199,7 +200,7 @@ public:
   void dumpEL(std::ostream &Os) const {
     std::vector<std::pair<T, T>> Els;
     Els.reserve(Data.size() * 2);
-    for (int I = 0; I < Data.size(); ++I) {
+    for (std::size_t I = 0; I < Data.size(); ++I) {
       if (Left[I] != -1)
         Els.emplace_back(Data[I], Data[Left[I]]);
       if (Right[I] != -1)
@@ -237,7 +238,7 @@ public:
     Os << "{ rank=sink nil }\n";
     setRanks(Ranks.begin(), 0);
     std::multimap<int, int> MRanks;
-    for (int I = 0; I < Data.size(); ++I)
+    for (std::size_t I = 0; I < Data.size(); ++I)
       MRanks.insert({Ranks[I], I});
     auto MaxRankIt = std::max_element(Ranks.begin(), Ranks.end());
     if (MaxRankIt != Ranks.end()) {
@@ -262,8 +263,6 @@ public:
       return Ret;
     assert(Root == 0);
     Ret.reserve(Data.size() * 2);
-    int Cursor = 0;
-
     std::stack<int> S;
     Ret.push_back(true);
     S.push(Right[Root]);
@@ -316,6 +315,12 @@ void brace_reverse(It VBegin, It VEnd) {
 template <typename T>
 std::optional<trees::TabTree<T>> read_bst_braced(int N, std::istream &Is,
                                                  bool Back) {
+  if (N < 0)
+    throw std::runtime_error("Tree size shall be non-negative");
+  if (N > std::numeric_limits<int>::max() / 2)
+    throw std::runtime_error("Tree size is too large");
+  if (N == 0)
+    return trees::TabTree<T>(0);
   int M = 0;
   N = N * 2;
   std::vector<bool> Vec(N + 1); // 2N + 1 to fit mandatory last 0
@@ -343,6 +348,15 @@ std::optional<trees::TabTree<T>> read_bst_braced(int N, std::istream &Is,
   if (Back)
     brace_reverse(Vec.begin(), std::prev(Vec.end()));
 
+  int Balance = 0;
+  for (int I = 0; I < N; ++I) {
+    Balance += Vec[I] ? 1 : -1;
+    if (Balance < 0)
+      throw std::runtime_error("Invalid braced tree topology");
+  }
+  if (Balance != 0)
+    throw std::runtime_error("Invalid braced tree topology");
+
   trees::TabTree<T> Ret(Vec.begin(), N);
   return Ret;
 }
@@ -359,6 +373,8 @@ std::optional<trees::TabTree<T>> read_bst_braced(std::istream &Is, bool Back) {
 
 template <typename T>
 std::optional<std::vector<T>> read_order(int N, std::istream &Is) {
+  if (N < 0)
+    throw std::runtime_error("Sequence size shall be non-negative");
   std::vector<T> Vec(N);
   for (int I = 0; I < N; ++I) {
     Is >> Vec[I];

@@ -1,0 +1,8 @@
+Available options:
+-back( = 0) : read input backwards
+-batch( = 0) : batch mode: single N then one by one
+-dot( = 0) : output dot file
+-ibrac( = 0) : input braced string
+-topo( = 0) : output braced topology
+-verbose( = 0) : a lot of debug output
+Runtime error: Wrong options

@@ -13,10 +13,11 @@
 
 #include <cassert>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <string_view>
 
 namespace options {
 
@@ -32,11 +33,11 @@ class Parser final {
   bool Parsed_ = false;
 
   // name -> value + description + exists
-  std::unordered_map<std::string, ValDesc> Values_;
+  std::map<std::string, ValDesc> Values_;
 
   // process -help option and illegal cases
-  void process_help_notfound(std::string Opt) {
-    bool IsHelp = (Opt.find("help") != Opt.npos);
+  void process_help_notfound(const std::string &Opt) {
+    bool IsHelp = (Opt == "help");
     if (IsHelp || !Values_.count(Opt)) {
       if (!IsHelp)
         std::cerr << "ERROR: illegal option detected: " << Opt << std::endl;
@@ -76,8 +77,12 @@ public:
     const auto &Desc = Values_.find(Name)->second;
     const auto &Val = Desc.value;
     std::istringstream Is{Val};
-    T Ret;
-    Is >> Ret;
+    T Ret{};
+    if (!(Is >> Ret))
+      throw std::runtime_error("Invalid value for option: " + Name);
+    Is >> std::ws;
+    if (!Is.eof())
+      throw std::runtime_error("Invalid value for option: " + Name);
     return Ret;
   }
 
@@ -95,6 +100,8 @@ public:
     for (int I = 1; I < argc; ++I) {
       std::string_view Optview = argv[I];
       auto TrimPos = Optview.find_first_not_of('-');
+      if (TrimPos == Optview.npos)
+        throw std::runtime_error("Empty option name");
       Optview.remove_prefix(TrimPos);
       TrimPos = Optview.find('=');
       bool HaveVal = (TrimPos != Optview.npos);

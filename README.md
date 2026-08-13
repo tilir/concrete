@@ -20,9 +20,22 @@ cmake --build debug
 env CTEST_OUTPUT_ON_FAILURE=1 cmake --build debug --target test
 ```
 
-### special configuration options
+Each input/output fixture is exposed as a separate CTest test. Useful subsets
+can be selected with `ctest --test-dir build -L fixture`, `-L properties`, or
+`-L pipeline`.
 
-- Include apps with SDL2 visualization: `-DVISUAL=1`
+Clang/LLVM coverage is available through a reproducible target which cleans old
+profiles and runs the tests before generating the report:
+
+```
+cmake -G Ninja -B coverage -DCMAKE_CXX_COMPILER=clang++ -DENABLE_COVERAGE=ON .
+cmake --build coverage --target coverage-report
+```
+
+For an AddressSanitizer and UndefinedBehaviorSanitizer build, configure with
+`-DENABLE_SANITIZERS=ON`. Common compiler warnings are enabled by default and
+can be disabled with `-DENABLE_WARNINGS=OFF` when integrating the headers into
+an unusual toolchain.
 
 ## Applications
 

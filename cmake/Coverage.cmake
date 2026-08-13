@@ -42,11 +42,13 @@ function(computability_add_coverage_targets_if_requested)
   set(COVERAGE_PROFILE_DIR ${CMAKE_BINARY_DIR}/profiles)
   set(COVERAGE_PROFDATA ${CMAKE_BINARY_DIR}/coverage.profdata)
   set(COVERAGE_HTML_DIR ${CMAKE_BINARY_DIR}/coverage-html)
+  set(COVERAGE_IGNORE_REGEX "(/usr/include|${CMAKE_SOURCE_DIR}/tests)/")
 
+  set(COVERAGE_TARGETS ${COMPUTABILITY_APPS} combinatorial-properties)
   set(COVERAGE_MAIN_OBJECT "")
   set(COVERAGE_OBJECT_ARGS)
 
-  foreach(APP ${COMPUTABILITY_APPS})
+  foreach(APP ${COVERAGE_TARGETS})
     if(COVERAGE_MAIN_OBJECT STREQUAL "")
       set(COVERAGE_MAIN_OBJECT "$<TARGET_FILE:${APP}>")
     else()
@@ -75,13 +77,24 @@ endif()
 message(STATUS \"Wrote \${PROFDATA}\")
 ")
 
+  add_custom_target(coverage-run
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${COVERAGE_PROFILE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_PROFILE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LLVM_PROFILE_FILE=${COVERAGE_PROFILE_DIR}/%p-%m.profraw"
+            ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
+    DEPENDS ${COVERAGE_TARGETS}
+    USES_TERMINAL
+    VERBATIM
+  )
+
   add_custom_target(coverage-merge
     COMMAND ${CMAKE_COMMAND}
             -DPROFILE_DIR=${COVERAGE_PROFILE_DIR}
             -DPROFDATA=${COVERAGE_PROFDATA}
             -DLLVM_PROFDATA=${LLVM_PROFDATA}
             -P ${COVERAGE_MERGE_SCRIPT}
-    DEPENDS ${COMPUTABILITY_APPS}
+    DEPENDS coverage-run
     USES_TERMINAL
     VERBATIM
   )
@@ -91,7 +104,7 @@ message(STATUS \"Wrote \${PROFDATA}\")
             ${COVERAGE_MAIN_OBJECT}
             ${COVERAGE_OBJECT_ARGS}
             -instr-profile=${COVERAGE_PROFDATA}
-            -ignore-filename-regex=/usr/include
+            -ignore-filename-regex=${COVERAGE_IGNORE_REGEX}
     DEPENDS coverage-merge
     USES_TERMINAL
     VERBATIM
@@ -107,7 +120,7 @@ message(STATUS \"Wrote \${PROFDATA}\")
             -output-dir=${COVERAGE_HTML_DIR}
             -show-line-counts-or-regions
             -show-branches=count
-            -ignore-filename-regex=/usr/include
+            -ignore-filename-regex=${COVERAGE_IGNORE_REGEX}
     DEPENDS coverage-merge
     USES_TERMINAL
     VERBATIM

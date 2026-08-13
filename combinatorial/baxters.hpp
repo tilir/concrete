@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iterator>
 #include <ranges>
 
 #include "idomain.hpp"
@@ -25,8 +26,11 @@ template <std::forward_iterator It> bool isBaxters(It VBegin, It VEnd) {
   using Dom = typename std::decay<decltype(*VBegin)>::type;
   static_assert(Domain<Dom>);
 
-  if (Dom::Max() - Dom::Min() + 1 < 4)
-    return false;
+  const auto DomainSize = Dom::Max() - Dom::Min() + 1;
+  assert(std::distance(VBegin, VEnd) == DomainSize);
+
+  if (DomainSize < 4)
+    return true;
 
   auto VecR = ranges::subrange(VBegin, VEnd);
 

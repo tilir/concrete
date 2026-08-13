@@ -46,9 +46,10 @@ Config parse_cfg(int argc, char **argv) {
 } // namespace
 
 int main(int argc, char **argv) try {
-  auto Cfg = parse_cfg(argc, argv);
-  int N;
-  std::cin >> N;
+  parse_cfg(argc, argv);
+  int N = 0;
+  if (!(std::cin >> N) || N <= 0)
+    throw std::runtime_error("Expected a positive brace-pair count");
   trees::braced_view V(N);
   std::cout << N << "\n";
   for (auto P : V) {

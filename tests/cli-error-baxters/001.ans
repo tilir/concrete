@@ -1,0 +1,6 @@
+Available options:
+-batch( = 0) : batch mode
+-combine( = 0) : output combined perm and if Baxters
+-filter( = 0) : output perm itself if Baxters or nothing
+-verbose( = 0) : a lot of debug output
+Runtime error: Wrong options

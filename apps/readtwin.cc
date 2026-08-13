@@ -65,6 +65,9 @@ bool BatchStep(int N, std::istream &Is, std::ostream &Os, const Config &Cfg) {
     }
   }
 
+  if (N <= 0)
+    throw std::runtime_error("Expected a positive permutation size");
+
   Tree = trees::read_twin_ordered(N, Is);
   if (!Tree) {
     ProcessStatus(Is);

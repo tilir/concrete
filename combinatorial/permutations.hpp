@@ -97,8 +97,8 @@ public:
 
   // return plain permutation format like 7 1 5 3 2 8 4 6
   std::vector<T> present_as_perm() const {
-    std::vector<T> Vec(T::Max());
-    std::iota(Vec.begin(), Vec.end(), 1);
+    std::vector<T> Vec(T::Max() - T::Min() + 1);
+    std::iota(Vec.begin(), Vec.end(), T::Min());
     apply(Vec.begin(), Vec.end());
     return Vec;
   }

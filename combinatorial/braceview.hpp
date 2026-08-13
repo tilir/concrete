@@ -16,6 +16,7 @@
 #include <cassert>
 #include <concepts>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <ranges>
 #include <stdexcept>
@@ -31,6 +32,12 @@ namespace views = std::views;
 
 struct BracedSentinel {};
 
+inline std::size_t braced_storage_size(int N) {
+  if (N <= 0 || N > std::numeric_limits<int>::max() / 2)
+    throw std::invalid_argument("Brace-pair count shall be positive");
+  return static_cast<std::size_t>(N) * 2;
+}
+
 class BracedGenerator {
   int N;
   int LeftMostClosing, ActiveTail;
@@ -40,9 +47,7 @@ class BracedGenerator {
 public:
   explicit BracedGenerator(int NBrac, bool P = true)
       : N(NBrac), LeftMostClosing(2 * (N - 1)), ActiveTail(LeftMostClosing - 1),
-        Braces(2 * N, '('), Proceed(P) {
-    if (N == 0)
-      throw std::logic_error("N == 0 not supported in BracedGenerator");
+        Braces(braced_storage_size(N), '('), Proceed(P) {
     for (int i = 0; i < N; ++i)
       Braces[2 * i + 1] = ')';
   }
@@ -104,7 +109,7 @@ inline bool operator!=(const BracedGenerator &Lhs, const BracedGenerator &Rhs) {
   return !(Lhs == Rhs);
 }
 
-inline bool operator==(const BracedGenerator &Lhs, const BracedSentinel &Rhs) {
+inline bool operator==(const BracedGenerator &Lhs, const BracedSentinel &) {
   return (Lhs.proceed() == false);
 }
 

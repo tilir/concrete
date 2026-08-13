@@ -41,10 +41,9 @@ public:
     for (int I = 0; I < N; ++I)
       Forward.addSearchOrder(VBegin[I]);
     Forward.read_structure(T0, L0.begin(), R0.begin(), D.begin());
-    std::reverse(VBegin, VBegin + N);
     TabTree<int> Backward(N);
     for (int I = 0; I < N; ++I)
-      Backward.addSearchOrder(VBegin[I]);
+      Backward.addSearchOrder(VBegin[N - 1 - I]);
     Backward.read_structure(T1, L1.begin(), R1.begin(), D.begin());
     std::reverse(D.begin(), D.end());
     T1 = N - 1 - T1;

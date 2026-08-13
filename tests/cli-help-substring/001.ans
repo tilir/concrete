@@ -1,0 +1,6 @@
+Available options:
+-first( = 1) : starting permutation value
+-last( = 10) : ending permutation value
+-seed( = 0) : optional seed to be reproducible
+-verbose( = 0) : a lot of debug output
+Runtime error: Wrong options
